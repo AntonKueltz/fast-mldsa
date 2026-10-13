@@ -9,6 +9,7 @@ name = "ml_dsa"
 crate-type = ["cdylib"]
 
 [dependencies]
+getrandom = "0.4.3"
 pyo3 = "0.29.0"
 shake = "0.1.0"
 zeroize = "1.9.1"

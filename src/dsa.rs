@@ -6,7 +6,52 @@ use crate::signing_key::SigningKey;
 use crate::vector::expand_s;
 use crate::verification_key::VerificationKey;
 
-fn key_gen_internal<const K: usize, const L: usize>(
+mod sealed {
+    pub trait Sealed {}
+}
+
+pub struct MlDsa44 {}
+
+pub trait Dsa: sealed::Sealed {
+    const K: usize;
+    const L: usize;
+    const ETA: usize;
+
+    type VerKey;
+    type VeryKeyBytes: AsRef<[u8]> + AsMut<[u8]>;
+
+    type SigKey;
+    type SigKeyBytes: AsRef<[u8]> + AsMut<[u8]> + Zeroize;
+
+    fn key_gen() -> (Self::VerKey, Self::SigKey);
+}
+
+impl sealed::Sealed for MlDsa44 {}
+
+impl Dsa for MlDsa44 {
+    const K: usize = 4;
+    const L: usize = 4;
+    const ETA: usize = 2;
+
+    type VerKey = VerificationKey<{ Self::K }, { Self::L }>;
+    type VeryKeyBytes = [u8; 1312];
+
+    type SigKey = SigningKey<{ Self::K }, { Self::L }>;
+    type SigKeyBytes = [u8; 2560];
+
+    fn key_gen() -> (Self::VerKey, Self::SigKey) {
+        key_gen_random::<Self, { Self::K }, { Self::L }>()
+    }
+}
+
+fn key_gen_random<P: Dsa, const K: usize, const L: usize>()
+-> (VerificationKey<K, L>, SigningKey<K, L>) {
+    let mut seed = [0u8; 32];
+    getrandom::fill(&mut seed).expect("Rng failure.");
+    key_gen_internal::<P, K, L>(&seed)
+}
+
+fn key_gen_internal<P: Dsa, const K: usize, const L: usize>(
     seed: &[u8; 32],
 ) -> (VerificationKey<K, L>, SigningKey<K, L>) {
     let mut buf = [0u8; 128];
@@ -21,7 +66,7 @@ fn key_gen_internal<const K: usize, const L: usize>(
     buf.zeroize();
 
     let a = Matrix::<K, L>::expand_a(&rho);
-    let (s1, s2) = expand_s::<K, L>(&rho_, 2usize);
+    let (s1, s2) = expand_s::<K, L>(&rho_, P::ETA);
     let mut s1_ = s1.clone();
     s1_.ntt();
 

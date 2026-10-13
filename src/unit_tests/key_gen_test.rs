@@ -271,7 +271,7 @@ fn test_key_gen_internal_44_01() {
         0xf1, 0x4d, 0x36, 0x15, 0xb9, 0xdf, 0x81, 0xae, 0xa3, 0xe4,
     ];
 
-    let (pk, sk) = key_gen_internal::<4, 4>(&seed);
+    let (pk, sk) = key_gen_internal::<MlDsa44, 4, 4>(&seed);
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
@@ -552,7 +552,7 @@ fn test_key_gen_internal_44_02() {
         0x02, 0x1b, 0xb7, 0x88, 0x81, 0x4a, 0xc5, 0x15, 0x32, 0xa1,
     ];
 
-    let (pk, sk) = key_gen_internal::<4, 4>(&seed);
+    let (pk, sk) = key_gen_internal::<MlDsa44, 4, 4>(&seed);
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
@@ -833,7 +833,7 @@ fn test_key_gen_internal_44_03() {
         0x48, 0x2c, 0x88, 0xae, 0x08, 0xd7, 0x14, 0x1c, 0xd2, 0x8e,
     ];
 
-    let (pk, sk) = key_gen_internal::<4, 4>(&seed);
+    let (pk, sk) = key_gen_internal::<MlDsa44, 4, 4>(&seed);
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
@@ -1114,7 +1114,7 @@ fn test_key_gen_internal_44_04() {
         0x13, 0x44, 0x07, 0x4d, 0x71, 0x62, 0x5e, 0x49, 0x75, 0x04,
     ];
 
-    let (pk, sk) = key_gen_internal::<4, 4>(&seed);
+    let (pk, sk) = key_gen_internal::<MlDsa44, 4, 4>(&seed);
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
@@ -1395,7 +1395,7 @@ fn test_key_gen_internal_44_05() {
         0x59, 0x08, 0xaa, 0x0f, 0x05, 0xf2, 0x41, 0x9c, 0xdb, 0x4a,
     ];
 
-    let (pk, sk) = key_gen_internal::<4, 4>(&seed);
+    let (pk, sk) = key_gen_internal::<MlDsa44, 4, 4>(&seed);
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
@@ -1676,7 +1676,7 @@ fn test_key_gen_internal_44_06() {
         0xe5, 0xba, 0x39, 0x7e, 0x14, 0x6c, 0x32, 0xd1, 0x4d, 0x73,
     ];
 
-    let (pk, sk) = key_gen_internal::<4, 4>(&seed);
+    let (pk, sk) = key_gen_internal::<MlDsa44, 4, 4>(&seed);
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
@@ -1957,7 +1957,7 @@ fn test_key_gen_internal_44_07() {
         0x41, 0xdf, 0x4d, 0x1d, 0xb6, 0x43, 0x5f, 0xa3, 0x08, 0xb7,
     ];
 
-    let (pk, sk) = key_gen_internal::<4, 4>(&seed);
+    let (pk, sk) = key_gen_internal::<MlDsa44, 4, 4>(&seed);
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
@@ -2238,7 +2238,7 @@ fn test_key_gen_internal_44_08() {
         0x81, 0x8b, 0xa4, 0xcc, 0x48, 0x60, 0xb0, 0x64, 0x1c, 0xe3,
     ];
 
-    let (pk, sk) = key_gen_internal::<4, 4>(&seed);
+    let (pk, sk) = key_gen_internal::<MlDsa44, 4, 4>(&seed);
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
@@ -2519,7 +2519,7 @@ fn test_key_gen_internal_44_09() {
         0x05, 0xca, 0x58, 0x4c, 0x46, 0x27, 0xf6, 0x2d, 0x0a, 0x13,
     ];
 
-    let (pk, sk) = key_gen_internal::<4, 4>(&seed);
+    let (pk, sk) = key_gen_internal::<MlDsa44, 4, 4>(&seed);
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
@@ -2800,7 +2800,7 @@ fn test_key_gen_internal_44_10() {
         0x1f, 0xad, 0x1f, 0xef, 0x5f, 0x41, 0x2c, 0x9b, 0xcc, 0x92,
     ];
 
-    let (pk, sk) = key_gen_internal::<4, 4>(&seed);
+    let (pk, sk) = key_gen_internal::<MlDsa44, 4, 4>(&seed);
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
@@ -3081,7 +3081,7 @@ fn test_key_gen_internal_44_11() {
         0x38, 0xb4, 0x71, 0x78, 0x3f, 0xfd, 0xb4, 0xdb, 0x6e, 0x2e,
     ];
 
-    let (pk, sk) = key_gen_internal::<4, 4>(&seed);
+    let (pk, sk) = key_gen_internal::<MlDsa44, 4, 4>(&seed);
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
@@ -3362,7 +3362,7 @@ fn test_key_gen_internal_44_12() {
         0x63, 0x3c, 0x9e, 0x5a, 0xf4, 0xab, 0xf5, 0x0c, 0x3d, 0x32,
     ];
 
-    let (pk, sk) = key_gen_internal::<4, 4>(&seed);
+    let (pk, sk) = key_gen_internal::<MlDsa44, 4, 4>(&seed);
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
@@ -3643,7 +3643,7 @@ fn test_key_gen_internal_44_13() {
         0xe7, 0x13, 0xa9, 0x85, 0xd7, 0x35, 0xe7, 0x1e, 0x43, 0x44,
     ];
 
-    let (pk, sk) = key_gen_internal::<4, 4>(&seed);
+    let (pk, sk) = key_gen_internal::<MlDsa44, 4, 4>(&seed);
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
@@ -3924,7 +3924,7 @@ fn test_key_gen_internal_44_14() {
         0x97, 0xb6, 0x5e, 0x39, 0x17, 0xa5, 0x5b, 0x43, 0xba, 0x10,
     ];
 
-    let (pk, sk) = key_gen_internal::<4, 4>(&seed);
+    let (pk, sk) = key_gen_internal::<MlDsa44, 4, 4>(&seed);
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
@@ -4205,7 +4205,7 @@ fn test_key_gen_internal_44_15() {
         0x88, 0x45, 0xcb, 0x33, 0x54, 0x8c, 0x06, 0xaf, 0x83, 0x92,
     ];
 
-    let (pk, sk) = key_gen_internal::<4, 4>(&seed);
+    let (pk, sk) = key_gen_internal::<MlDsa44, 4, 4>(&seed);
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
@@ -4486,7 +4486,7 @@ fn test_key_gen_internal_44_16() {
         0x06, 0x20, 0x1d, 0x9d, 0x69, 0x84, 0xda, 0x56, 0x62, 0x38,
     ];
 
-    let (pk, sk) = key_gen_internal::<4, 4>(&seed);
+    let (pk, sk) = key_gen_internal::<MlDsa44, 4, 4>(&seed);
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
@@ -4767,7 +4767,7 @@ fn test_key_gen_internal_44_17() {
         0xe0, 0x8a, 0x8a, 0x63, 0x13, 0x7c, 0x54, 0x02, 0xe0, 0xe2,
     ];
 
-    let (pk, sk) = key_gen_internal::<4, 4>(&seed);
+    let (pk, sk) = key_gen_internal::<MlDsa44, 4, 4>(&seed);
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
@@ -5048,7 +5048,7 @@ fn test_key_gen_internal_44_18() {
         0x25, 0x51, 0x55, 0x96, 0xef, 0x70, 0x95, 0x8b, 0x94, 0xe8,
     ];
 
-    let (pk, sk) = key_gen_internal::<4, 4>(&seed);
+    let (pk, sk) = key_gen_internal::<MlDsa44, 4, 4>(&seed);
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
@@ -5329,7 +5329,7 @@ fn test_key_gen_internal_44_19() {
         0x9b, 0xff, 0xf9, 0x67, 0x95, 0x2b, 0x55, 0xc8, 0xed, 0xdd,
     ];
 
-    let (pk, sk) = key_gen_internal::<4, 4>(&seed);
+    let (pk, sk) = key_gen_internal::<MlDsa44, 4, 4>(&seed);
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
@@ -5610,7 +5610,7 @@ fn test_key_gen_internal_44_20() {
         0x61, 0x21, 0x23, 0x47, 0xdc, 0x99, 0xc7, 0x25, 0x77, 0xa8,
     ];
 
-    let (pk, sk) = key_gen_internal::<4, 4>(&seed);
+    let (pk, sk) = key_gen_internal::<MlDsa44, 4, 4>(&seed);
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
@@ -5891,7 +5891,7 @@ fn test_key_gen_internal_44_21() {
         0x4a, 0x6e, 0xd3, 0x1e, 0xf1, 0xd2, 0x46, 0xe6, 0x1f, 0x57,
     ];
 
-    let (pk, sk) = key_gen_internal::<4, 4>(&seed);
+    let (pk, sk) = key_gen_internal::<MlDsa44, 4, 4>(&seed);
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
@@ -6172,7 +6172,7 @@ fn test_key_gen_internal_44_22() {
         0xe3, 0xb7, 0x9f, 0x26, 0xdf, 0x82, 0x1e, 0x6a, 0x34, 0x66,
     ];
 
-    let (pk, sk) = key_gen_internal::<4, 4>(&seed);
+    let (pk, sk) = key_gen_internal::<MlDsa44, 4, 4>(&seed);
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
@@ -6453,7 +6453,7 @@ fn test_key_gen_internal_44_23() {
         0x65, 0xe6, 0x5f, 0xd3, 0xa8, 0xda, 0x10, 0x61, 0x5f, 0xaf,
     ];
 
-    let (pk, sk) = key_gen_internal::<4, 4>(&seed);
+    let (pk, sk) = key_gen_internal::<MlDsa44, 4, 4>(&seed);
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
@@ -6734,7 +6734,7 @@ fn test_key_gen_internal_44_24() {
         0x00, 0xea, 0xc3, 0xd4, 0xdc, 0xc0, 0xde, 0x9c, 0x55, 0x7a,
     ];
 
-    let (pk, sk) = key_gen_internal::<4, 4>(&seed);
+    let (pk, sk) = key_gen_internal::<MlDsa44, 4, 4>(&seed);
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
@@ -7015,7 +7015,7 @@ fn test_key_gen_internal_44_25() {
         0xfb, 0x57, 0x1b, 0x7a, 0x7a, 0x9b, 0x55, 0xbc, 0x54, 0xae,
     ];
 
-    let (pk, sk) = key_gen_internal::<4, 4>(&seed);
+    let (pk, sk) = key_gen_internal::<MlDsa44, 4, 4>(&seed);
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
