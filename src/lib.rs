@@ -1,6 +1,6 @@
 use pyo3::{prelude::*, types::PyBytes};
 
-use crate::dsa::{Dsa, MlDsa44};
+use crate::dsa::{Dsa, MlDsa44, MlDsa65, MlDsa87};
 use crate::signing_key::SigningKey;
 use crate::verification_key::VerificationKey;
 
@@ -17,22 +17,22 @@ mod verification_key;
 pub enum ParameterSet {
     #[pyo3(name = "ML_DSA_44")]
     MlDsa44 = 44,
-    // #[pyo3(name = "ML_DSA_65")]
-    // MlDsa65 = 65,
-    // #[pyo3(name = "ML_DSA_87")]
-    // MlDsa87 = 87,
+    #[pyo3(name = "ML_DSA_65")]
+    MlDsa65 = 65,
+    #[pyo3(name = "ML_DSA_87")]
+    MlDsa87 = 87,
 }
 
 enum VkInner {
     P44(VerificationKey<4, 4>),
-    // P65(VerificationKey<6, 5>),
-    // P87(VerificationKey<8, 7>),
+    P65(VerificationKey<6, 5>),
+    P87(VerificationKey<8, 7>),
 }
 
 enum SkInner {
     P44(SigningKey<4, 4>),
-    // P65(SigningKey<6, 5>),
-    // P87(SigningKey<8, 7>),
+    P65(SigningKey<6, 5>),
+    P87(SigningKey<8, 7>),
 }
 
 #[pyclass(name = "VerificationKey", frozen)]
@@ -63,6 +63,16 @@ impl PyVerificationKey {
                 k.to_bytes(&mut bytes);
                 Ok(PyBytes::new(py, &bytes))
             }
+            VkInner::P65(k) => {
+                let mut bytes = [0u8; 1952];
+                k.to_bytes(&mut bytes);
+                Ok(PyBytes::new(py, &bytes))
+            }
+            VkInner::P87(k) => {
+                let mut bytes = [0u8; 2592];
+                k.to_bytes(&mut bytes);
+                Ok(PyBytes::new(py, &bytes))
+            }
         }
     }
 
@@ -77,7 +87,17 @@ impl PySigningKey {
         match &self.inner {
             SkInner::P44(k) => {
                 let mut bytes = [0u8; 2560];
-                k.to_bytes(&mut bytes);
+                k.to_bytes(&mut bytes, 3);
+                Ok(PyBytes::new(py, &bytes))
+            }
+            SkInner::P65(k) => {
+                let mut bytes = [0u8; 4032];
+                k.to_bytes(&mut bytes, 3);
+                Ok(PyBytes::new(py, &bytes))
+            }
+            SkInner::P87(k) => {
+                let mut bytes = [0u8; 4896];
+                k.to_bytes(&mut bytes, 3);
                 Ok(PyBytes::new(py, &bytes))
             }
         }
@@ -108,6 +128,28 @@ impl MlDsa {
                     },
                     PySigningKey {
                         inner: SkInner::P44(sk),
+                    },
+                )
+            }
+            ParameterSet::MlDsa65 => {
+                let (pk, sk) = key_gen_impl::<MlDsa65>();
+                (
+                    PyVerificationKey {
+                        inner: VkInner::P65(pk),
+                    },
+                    PySigningKey {
+                        inner: SkInner::P65(sk),
+                    },
+                )
+            }
+            ParameterSet::MlDsa87 => {
+                let (pk, sk) = key_gen_impl::<MlDsa87>();
+                (
+                    PyVerificationKey {
+                        inner: VkInner::P87(pk),
+                    },
+                    PySigningKey {
+                        inner: SkInner::P87(sk),
                     },
                 )
             }

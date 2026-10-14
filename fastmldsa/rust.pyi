@@ -2,8 +2,8 @@ from enum import Enum
 
 class ParameterSet(Enum):
     ML_DSA_44 = 44
-    # ML_DSA_65 = 65
-    # ML_DSA_87 = 87
+    ML_DSA_65 = 65
+    ML_DSA_87 = 87
 
 class VerificationKey:
     def __bytes__(self) -> bytes: ...

@@ -11,6 +11,8 @@ mod sealed {
 }
 
 pub struct MlDsa44 {}
+pub struct MlDsa65 {}
+pub struct MlDsa87 {}
 
 pub trait Dsa: sealed::Sealed {
     const K: usize;
@@ -38,6 +40,42 @@ impl Dsa for MlDsa44 {
 
     type SigKey = SigningKey<{ Self::K }, { Self::L }>;
     type SigKeyBytes = [u8; 2560];
+
+    fn key_gen() -> (Self::VerKey, Self::SigKey) {
+        key_gen_random::<Self, { Self::K }, { Self::L }>()
+    }
+}
+
+impl sealed::Sealed for MlDsa65 {}
+
+impl Dsa for MlDsa65 {
+    const K: usize = 6;
+    const L: usize = 5;
+    const ETA: usize = 4;
+
+    type VerKey = VerificationKey<{ Self::K }, { Self::L }>;
+    type VeryKeyBytes = [u8; 1952];
+
+    type SigKey = SigningKey<{ Self::K }, { Self::L }>;
+    type SigKeyBytes = [u8; 4032];
+
+    fn key_gen() -> (Self::VerKey, Self::SigKey) {
+        key_gen_random::<Self, { Self::K }, { Self::L }>()
+    }
+}
+
+impl sealed::Sealed for MlDsa87 {}
+
+impl Dsa for MlDsa87 {
+    const K: usize = 8;
+    const L: usize = 7;
+    const ETA: usize = 2;
+
+    type VerKey = VerificationKey<{ Self::K }, { Self::L }>;
+    type VeryKeyBytes = [u8; 2592];
+
+    type SigKey = SigningKey<{ Self::K }, { Self::L }>;
+    type SigKeyBytes = [u8; 4896];
 
     fn key_gen() -> (Self::VerKey, Self::SigKey) {
         key_gen_random::<Self, { Self::K }, { Self::L }>()

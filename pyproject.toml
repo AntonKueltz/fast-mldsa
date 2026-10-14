@@ -19,6 +19,12 @@ classifiers = [
 ]
 dynamic = ["version"]
 
+[project.urls]
+source = "https://github.com/AntonKueltz/fast-mldsa"
+
+[project.scripts]
+benchmark = "fastmldsa.benchmark:main"
+
 [dependency-groups]
 dev = [
     "ipython>=9.17.1",

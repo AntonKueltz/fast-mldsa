@@ -199,6 +199,7 @@ impl Polynomial {
         match d {
             13 => self.to_bytes_13(buf),
             10 => self.to_bytes_10(buf),
+            4 => self.to_bytes_4(buf),
             3 => self.to_bytes_3(buf),
             _ => unreachable!(),
         }
@@ -252,6 +253,19 @@ impl Polynomial {
             buf[bi + 3] = ((w2 >> 4) as u8) | ((w3 << 6) as u8);
             buf[bi + 4] = (w3 >> 2) as u8;
             bi += 5;
+        }
+    }
+
+    fn to_bytes_4(&self, buf: &mut [u8]) {
+        debug_assert_eq!(buf.len(), 128);
+        let mut bi = 0;
+
+        for i in (0..N).step_by(2) {
+            let w0 = 4 - self.coeffs[i];
+            let w1 = 4 - self.coeffs[i + 1];
+
+            buf[bi] = (w0 as u8) | ((w1 << 4) as u8);
+            bi += 1;
         }
     }
 
