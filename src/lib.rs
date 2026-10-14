@@ -111,7 +111,7 @@ impl PySigningKey {
 #[pymethods]
 impl MlDsa {
     #[new]
-    #[pyo3(signature = (parameter_set = ParameterSet::MlDsa44))]
+    #[pyo3(signature = (parameter_set = ParameterSet::MlDsa65))]
     fn new(parameter_set: ParameterSet) -> Self {
         Self {
             params: parameter_set,
