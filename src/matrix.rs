@@ -3,6 +3,7 @@ use std::array::from_fn;
 use crate::polynomial::Polynomial;
 use crate::vector::Vector;
 
+#[derive(Clone)]
 pub(crate) struct Matrix<const K: usize, const L: usize> {
     rows: [Vector<L>; K],
 }
@@ -26,7 +27,7 @@ impl<const K: usize, const L: usize> Matrix<K, L> {
         a
     }
 
-    pub(crate) fn mul(&self, other: &Vector<L>) -> Vector<K> {
+    pub(crate) fn mul_vec(&self, other: &Vector<L>) -> Vector<K> {
         let mut w = Vector::<K>::new();
 
         for i in 0..K {

@@ -1,3 +1,4 @@
+use pyo3::exceptions::PyValueError;
 use pyo3::{prelude::*, types::PyBytes};
 
 use crate::dsa::{Dsa, MlDsa44, MlDsa65, MlDsa87};
@@ -5,9 +6,11 @@ use crate::signing_key::SigningKey;
 use crate::verification_key::VerificationKey;
 
 pub mod dsa;
+mod hash;
 mod integer_field;
 mod matrix;
 mod polynomial;
+mod signer;
 mod signing_key;
 mod vector;
 mod verification_key;
@@ -52,6 +55,18 @@ struct MlDsa {
 
 fn key_gen_impl<P: Dsa>() -> (P::VerKey, P::SigKey) {
     P::key_gen()
+}
+
+fn sign_impl<'py, P: Dsa>(
+    py: Python<'py>,
+    sk: &P::SigKey,
+    msg: &[u8],
+    ctx: &[u8],
+) -> PyResult<Bound<'py, PyBytes>> {
+    match P::sign(sk, msg, ctx) {
+        Some(val) => Ok(PyBytes::new(py, val.as_ref())),
+        None => Err(PyValueError::new_err("Error computing signature.")),
+    }
 }
 
 #[pymethods]
@@ -152,6 +167,31 @@ impl MlDsa {
                         inner: SkInner::P87(sk),
                     },
                 )
+            }
+        }
+    }
+
+    fn sign<'py>(
+        &self,
+        py: Python<'py>,
+        sk: &PySigningKey,
+        msg: Vec<u8>,
+        ctx: Vec<u8>,
+    ) -> PyResult<Bound<'py, PyBytes>> {
+        match (self.params, &sk.inner) {
+            (ParameterSet::MlDsa44, SkInner::P44(k)) => {
+                sign_impl::<MlDsa44>(py, k, msg.as_slice(), ctx.as_slice())
+            }
+            (ParameterSet::MlDsa65, SkInner::P65(k)) => {
+                sign_impl::<MlDsa65>(py, k, msg.as_slice(), ctx.as_slice())
+            }
+            (ParameterSet::MlDsa87, SkInner::P87(k)) => {
+                sign_impl::<MlDsa87>(py, k, msg.as_slice(), ctx.as_slice())
+            }
+            _ => {
+                return Err(PyValueError::new_err(
+                    "Key does not match this ML_DSA parameter set",
+                ));
             }
         }
     }

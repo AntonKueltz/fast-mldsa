@@ -2,7 +2,7 @@ use shake::{ExtendableOutput, Shake128, Shake256, Update, XofReader};
 
 use crate::integer_field::{cond_add_q, mont_q, reduce_q};
 
-const N: usize = 256;
+pub(crate) const N: usize = 256;
 const Q: i32 = 8380417;
 
 const ZETAS: [i32; N] = [
@@ -36,7 +36,7 @@ const ZETAS: [i32; N] = [
 
 #[derive(Clone)]
 pub(crate) struct Polynomial {
-    coeffs: [i32; N],
+    pub(crate) coeffs: [i32; N],
 }
 
 impl Polynomial {
@@ -107,6 +107,51 @@ impl Polynomial {
         p
     }
 
+    pub(crate) fn sample_ball(bytes: &[u8], tau: usize) -> Self {
+        let mut c = Self::new();
+
+        let mut shaker = Shake256::default();
+        shaker.update(bytes);
+        let mut xof = shaker.finalize_xof();
+
+        let mut s = [0u8; 8];
+        xof.read(&mut s);
+        let h: u64 = u64::from_le_bytes(s);
+
+        for i in (N - tau)..N {
+            let mut jb = [0u8];
+            xof.read(&mut jb);
+            let mut j = jb[0] as usize;
+
+            while j > i {
+                xof.read(&mut jb);
+                j = jb[0] as usize;
+            }
+
+            c.coeffs[i] = c.coeffs[j];
+            c.coeffs[j] = if (h >> (i + tau - 256)) & 1 == 1 {
+                -1
+            } else {
+                1
+            };
+        }
+
+        c
+    }
+
+    pub(crate) fn from_bytes(bytes: &[u8], d: usize) -> Self {
+        debug_assert_eq!(bytes.len(), d << 5);
+
+        match d {
+            20 => Self::from_bytes_20(bytes),
+            18 => Self::from_bytes_18(bytes),
+            13 => Self::from_bytes_13(bytes),
+            4 => Self::from_bytes_4(bytes),
+            3 => Self::from_bytes_3(bytes),
+            _ => unreachable!(),
+        }
+    }
+
     pub(crate) fn reduce(&mut self) {
         for i in 0..N {
             self.coeffs[i] = reduce_q(self.coeffs[i]);
@@ -173,9 +218,46 @@ impl Polynomial {
         }
     }
 
+    pub(crate) fn norm_within_limit(&self, limit: i32) -> bool {
+        if limit > ((Q - 1) >> 3) {
+            return false;
+        }
+
+        for i in 0..N {
+            let x = self.coeffs[i];
+            let mut t = x >> 31;
+            t = x - (t & (x << 1));
+
+            if t >= limit {
+                return false;
+            }
+        }
+
+        true
+    }
+
+    pub(crate) fn make_hint(&mut self, lo: &Self, hi: &Self, gamma: i32) -> usize {
+        let mut ones = 0;
+
+        for i in 0..N {
+            let (a0, a1) = (lo.coeffs[i], hi.coeffs[i]);
+            let hint = (a0 > gamma || a0 < -gamma || (a0 == -gamma && a1 != 0)) as i32;
+            self.coeffs[i] = hint;
+            ones += hint as usize;
+        }
+
+        ones
+    }
+
     pub(crate) fn add_acc(&mut self, other: &Self) {
         for i in 0..N {
             self.coeffs[i] += other.coeffs[i];
+        }
+    }
+
+    pub(crate) fn sub_acc(&mut self, other: &Self) {
+        for i in 0..N {
+            self.coeffs[i] -= other.coeffs[i];
         }
     }
 
@@ -195,13 +277,233 @@ impl Polynomial {
         }
     }
 
+    pub(crate) fn decompose(&self, hi: &mut Self, lo: &mut Self, gamma: usize) {
+        const BIT_21: i32 = 1 << 21;
+        const BIT_23: i32 = 1 << 23;
+
+        for i in 0..N {
+            let a = self.coeffs[i];
+            let mut a_hi = (a + 127) >> 7;
+
+            if gamma == 261888 {
+                a_hi = ((a_hi * 1025 + BIT_21) >> 22) & 0xf;
+            } else if gamma == 95232 {
+                a_hi = (a_hi * 11275 + BIT_23) >> 24;
+                a_hi ^= ((43 - a_hi) >> 31) & a_hi;
+            } else {
+                unreachable!()
+            }
+
+            let mut a_lo = a - a_hi * (gamma << 1) as i32;
+            a_lo -= ((((Q - 1) >> 1) - a_lo) >> 31) & Q;
+
+            hi.coeffs[i] = a_hi;
+            lo.coeffs[i] = a_lo;
+        }
+    }
+
     pub(crate) fn to_bytes(&self, buf: &mut [u8], d: usize) {
         match d {
+            20 => self.to_bytes_20(buf),
+            18 => self.to_bytes_18(buf),
             13 => self.to_bytes_13(buf),
             10 => self.to_bytes_10(buf),
             4 => self.to_bytes_4(buf),
             3 => self.to_bytes_3(buf),
             _ => unreachable!(),
+        }
+    }
+
+    pub fn to_bytes_w1(&self, buf: &mut [u8], gamma: usize) {
+        let mut bi = 0;
+
+        if gamma == 261888 {
+            debug_assert_eq!(buf.len(), 128);
+
+            for i in (0..N).step_by(2) {
+                buf[bi] = (self.coeffs[i] as u8) | ((self.coeffs[i + 1] << 4) as u8);
+                bi += 1;
+            }
+        } else if gamma == 95232 {
+            debug_assert_eq!(buf.len(), 192);
+
+            for i in (0..N).step_by(4) {
+                buf[bi] = (self.coeffs[i] as u8) | ((self.coeffs[i + 1] << 6) as u8);
+                buf[bi + 1] = ((self.coeffs[i + 1] >> 2) as u8) | ((self.coeffs[i + 2] << 4) as u8);
+                buf[bi + 2] = ((self.coeffs[i + 2] >> 4) as u8) | ((self.coeffs[i + 3] << 2) as u8);
+                bi += 3;
+            }
+        } else {
+            unreachable!()
+        }
+    }
+
+    fn from_bytes_20(b: &[u8]) -> Self {
+        let mut r = Self::new();
+        let mut bi = 0;
+        const GAMMA: i32 = 1 << 19;
+
+        for i in (0..N).step_by(2) {
+            let r0 = (b[bi] as u32) | ((b[bi + 1] as u32) << 8) | ((b[bi + 2] as u32) << 16);
+            r.coeffs[i] = GAMMA - ((r0 & 0xfffff) as i32);
+
+            let r1 =
+                ((b[bi + 2] as u32) >> 4) | ((b[bi + 3] as u32) << 4) | ((b[bi + 4] as u32) << 12);
+            r.coeffs[i + 1] = GAMMA - (r1 as i32);
+
+            bi += 5;
+        }
+
+        r
+    }
+
+    fn from_bytes_18(b: &[u8]) -> Self {
+        let mut r = Self::new();
+        let mut bi = 0;
+        const GAMMA: i32 = 1 << 17;
+
+        for i in (0..N).step_by(4) {
+            let r0 = (b[bi] as u32) | ((b[bi + 1] as u32) << 8) | ((b[bi + 2] as u32) << 16);
+            r.coeffs[i] = GAMMA - ((r0 & 0x3ffff) as i32);
+
+            let r1 =
+                ((b[bi + 2] as u32) >> 2) | ((b[bi + 3] as u32) << 6) | ((b[bi + 4] as u32) << 14);
+            r.coeffs[i + 1] = GAMMA - ((r1 & 0x3ffff) as i32);
+
+            let r2 =
+                ((b[bi + 4] as u32) >> 4) | ((b[bi + 5] as u32) << 4) | ((b[bi + 6] as u32) << 12);
+            r.coeffs[i + 2] = GAMMA - ((r2 & 0x3ffff) as i32);
+
+            let r3 =
+                ((b[bi + 6] as u32) >> 6) | ((b[bi + 7] as u32) << 2) | ((b[bi + 8] as u32) << 10);
+            r.coeffs[i + 3] = GAMMA - ((r3 & 0x3ffff) as i32);
+
+            bi += 9;
+        }
+
+        r
+    }
+
+    fn from_bytes_13(b: &[u8]) -> Self {
+        let mut r = Self::new();
+        let mut bi = 0;
+        const C: i32 = 1 << 12;
+
+        for i in (0..N).step_by(8) {
+            let r0 = (b[bi] as u32) | ((b[bi + 1] as u32) << 8);
+            r.coeffs[i] = C - ((r0 & 0x1fff) as i32);
+
+            let r1 =
+                ((b[bi + 1] as u32) >> 5) | ((b[bi + 2] as u32) << 3) | ((b[bi + 3] as u32) << 11);
+            r.coeffs[i + 1] = C - ((r1 & 0x1fff) as i32);
+
+            let r2 = ((b[bi + 3] as u32) >> 2) | ((b[bi + 4] as u32) << 6);
+            r.coeffs[i + 2] = C - ((r2 & 0x1fff) as i32);
+
+            let r3 =
+                ((b[bi + 4] as u32) >> 7) | ((b[bi + 5] as u32) << 1) | ((b[bi + 6] as u32) << 9);
+            r.coeffs[i + 3] = C - ((r3 & 0x1fff) as i32);
+
+            let r4 =
+                ((b[bi + 6] as u32) >> 4) | ((b[bi + 7] as u32) << 4) | ((b[bi + 8] as u32) << 12);
+            r.coeffs[i + 4] = C - ((r4 & 0x1fff) as i32);
+
+            let r5 = ((b[bi + 8] as u32) >> 1) | ((b[bi + 9] as u32) << 7);
+            r.coeffs[i + 5] = C - ((r5 & 0x1fff) as i32);
+
+            let r6 = ((b[bi + 9] as u32) >> 6)
+                | ((b[bi + 10] as u32) << 2)
+                | ((b[bi + 11] as u32) << 10);
+            r.coeffs[i + 6] = C - ((r6 & 0x1fff) as i32);
+
+            let r7 = ((b[bi + 11] as u32) >> 3) | ((b[bi + 12] as u32) << 5);
+            r.coeffs[i + 7] = C - ((r7 & 0x1fff) as i32);
+
+            bi += 13;
+        }
+
+        r
+    }
+
+    fn from_bytes_4(b: &[u8]) -> Self {
+        let mut r = Self::new();
+        let mut bi = 0;
+        const ETA: i32 = 4;
+
+        for i in (0..N).step_by(2) {
+            let b0 = b[bi];
+            bi += 1;
+
+            r.coeffs[i] = ETA - ((b0 & 0xf) as i32);
+            r.coeffs[i + 1] = ETA - ((b0 >> 4) as i32);
+        }
+
+        r
+    }
+
+    fn from_bytes_3(b: &[u8]) -> Self {
+        let mut r = Self::new();
+        let mut bi = 0;
+        const ETA: i32 = 2;
+
+        for i in (0..N).step_by(8) {
+            let b0 = b[bi];
+            let b1 = b[bi + 1];
+            let b2 = b[bi + 2];
+            bi += 3;
+
+            r.coeffs[i] = ETA - ((b0 & 0x7) as i32);
+            r.coeffs[i + 1] = ETA - (((b0 >> 3) & 0x7) as i32);
+            r.coeffs[i + 2] = ETA - ((((b0 >> 6) | (b1 << 2)) & 0x7) as i32);
+            r.coeffs[i + 3] = ETA - (((b1 >> 1) & 0x7) as i32);
+            r.coeffs[i + 4] = ETA - (((b1 >> 4) & 0x7) as i32);
+            r.coeffs[i + 5] = ETA - ((((b1 >> 7) | (b2 << 1)) & 0x7) as i32);
+            r.coeffs[i + 6] = ETA - (((b2 >> 2) & 0x7) as i32);
+            r.coeffs[i + 7] = ETA - (((b2 >> 5) & 0x7) as i32);
+        }
+
+        r
+    }
+
+    fn to_bytes_20(&self, buf: &mut [u8]) {
+        debug_assert_eq!(buf.len(), 640);
+        let mut bi = 0;
+        const GAMMA: i32 = 1 << 19;
+
+        for i in (0..N).step_by(2) {
+            let t0 = GAMMA - self.coeffs[i];
+            let t1 = GAMMA - self.coeffs[i + 1];
+
+            buf[bi] = t0 as u8;
+            buf[bi + 1] = (t0 >> 8) as u8;
+            buf[bi + 2] = ((t0 >> 16) as u8) | ((t1 << 4) as u8);
+            buf[bi + 3] = (t1 >> 4) as u8;
+            buf[bi + 4] = (t1 >> 12) as u8;
+            bi += 5;
+        }
+    }
+
+    fn to_bytes_18(&self, buf: &mut [u8]) {
+        debug_assert_eq!(buf.len(), 576);
+        let mut bi = 0;
+        const GAMMA: i32 = 1 << 17;
+
+        for i in (0..N).step_by(4) {
+            let t0 = GAMMA - self.coeffs[i];
+            let t1 = GAMMA - self.coeffs[i + 1];
+            let t2 = GAMMA - self.coeffs[i + 2];
+            let t3 = GAMMA - self.coeffs[i + 3];
+
+            buf[bi] = t0 as u8;
+            buf[bi + 1] = (t0 >> 8) as u8;
+            buf[bi + 2] = ((t0 >> 16) as u8) | ((t1 << 2) as u8);
+            buf[bi + 3] = (t1 >> 6) as u8;
+            buf[bi + 4] = ((t1 >> 14) as u8) | ((t2 << 4) as u8);
+            buf[bi + 5] = (t2 >> 4) as u8;
+            buf[bi + 6] = ((t2 >> 12) as u8) | ((t3 << 6) as u8);
+            buf[bi + 7] = (t3 >> 2) as u8;
+            buf[bi + 8] = (t3 >> 10) as u8;
+            bi += 9;
         }
     }
 

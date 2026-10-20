@@ -1,4 +1,4 @@
-"""Benchmark ML-DSA key generation: ops/sec for each parameter set.
+"""Benchmark ML-DSA key generation and signing: ops/sec for each parameter set.
 
 Usage:
 
@@ -28,19 +28,24 @@ class Case:
 
     The benchmark lists the sets explicitly and carries its own labels rather
     than relying on enum iteration. `sizes` are FIPS 204 sizes in bytes:
-    (vk, sk).
+    (vk, sk, sig).
     """
 
     name: str
     ps: ParameterSet
-    sizes: tuple[int, int]
+    sizes: tuple[int, int, int]
 
 
 CASES = [
-    Case("ML_DSA_44", ParameterSet.ML_DSA_44, (1312, 2560)),
-    Case("ML_DSA_65", ParameterSet.ML_DSA_65, (1952, 4032)),
-    Case("ML_DSA_87", ParameterSet.ML_DSA_87, (2592, 4896)),
+    Case("ML_DSA_44", ParameterSet.ML_DSA_44, (1312, 2560, 2420)),
+    Case("ML_DSA_65", ParameterSet.ML_DSA_65, (1952, 4032, 3309)),
+    Case("ML_DSA_87", ParameterSet.ML_DSA_87, (2592, 4896, 4627)),
 ]
+
+
+# Fixed signing inputs so every round measures the same work.
+MSG = bytes(range(256)) * 4  # 1 KiB message
+CTX = b"benchmark"
 
 
 @dataclass
@@ -120,7 +125,7 @@ def _check(cond: bool, msg: str) -> None:
 
 def _keys(case: Case) -> tuple[ML_DSA, VerificationKey, SigningKey]:
     """Fresh keypair with size and type sanity checks."""
-    vk_len, sk_len = case.sizes
+    vk_len, sk_len, _ = case.sizes
 
     dsa = ML_DSA(case.ps)
     vk, sk = dsa.key_gen()
@@ -151,8 +156,25 @@ def make_keygen(case: Case) -> Callable[[], object]:
     return dsa.key_gen
 
 
+def make_sign(case: Case) -> Callable[[], object]:
+    dsa, _, sk = _keys(case)  # key generation is outside the timed region
+    sig_len = case.sizes[2]
+
+    sig = dsa.sign(sk, MSG, CTX)
+    _check(isinstance(sig, bytes), f"{case.name}: signature has wrong type")
+    _check(
+        len(sig) == sig_len,
+        f"{case.name}: signature is {len(sig)} bytes, expected {sig_len}",
+    )
+
+    # Signing uses rejection sampling, so per-call time varies; the harness
+    # averages over many iterations per round to smooth that out.
+    return lambda: dsa.sign(sk, MSG, CTX)
+
+
 OPS: dict[str, Callable[[Case], Callable[[], object]]] = {
     "keygen": make_keygen,
+    "sign": make_sign,
 }
 
 

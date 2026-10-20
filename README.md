@@ -10,6 +10,9 @@ from fastmldsa import ML_DSA
 
 dsa = ML_DSA()
 vk, sk = dsa.key_gen()  # verification and signing key
+
+msg, ctx = b"...", b"..."
+sig = dsa.sign(sk, msg, ctx)  # signature over the message and context
 ```
 
 ## Parameter Sets
@@ -22,7 +25,7 @@ and `ML-DSA-87` are also supported.
 from fastmldsa import ML_DSA, ParameterSet
 
 dsa = ML_DSA(ParameterSet.ML_DSA_87)
-vk, sk = dsa.key_gen()  # verification and signing key
+vk, sk = dsa.key_gen()  # verification and signing key for ML-DSA-87 parameter set
 ```
 
 # Development
