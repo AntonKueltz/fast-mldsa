@@ -93,6 +93,14 @@ cargo test     # tests the rust code
 uv run pytest  # tests the python code
 ```
 
+There are also slower tests for the higher iteration
+[accumulated tests](https://github.com/C2SP/CCTV/tree/main/ML-DSA/accumulated) that
+are skipped by default. The 60,000,000 iteration tests take a very long time to run.
+
+```bash
+uv run pytest -m slow
+```
+
 # Performance
 
 Below are some benchmarks for each parameter set, running on 64bit OS with a i9-9900k and

@@ -40,3 +40,9 @@ build-backend = "maturin"
 
 [tool.maturin]
 module-name = "fastmldsa.rust"
+
+[tool.pytest.ini_options]
+markers = [
+    "slow: marks tests as slow (skipped by default)"
+]
+addopts = "-m 'not slow'"
