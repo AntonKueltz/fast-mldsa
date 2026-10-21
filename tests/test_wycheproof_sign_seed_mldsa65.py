@@ -5,7 +5,7 @@ from parameterized import parameterized
 from fastmldsa import ML_DSA, ParameterSet
 
 
-class TestSign(TestCase):
+class TestSignSeedMlDsa65(TestCase):
     @parameterized.expand(
         [
             (

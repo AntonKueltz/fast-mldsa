@@ -147,6 +147,14 @@ impl Polynomial {
             18 => Self::from_bytes_18(bytes),
             13 => Self::from_bytes_13(bytes),
             10 => Self::from_bytes_10(bytes),
+            _ => unreachable!(),
+        }
+    }
+
+    pub(crate) fn from_bytes_eta(bytes: &[u8], eta_bits: usize) -> Result<Self, String> {
+        debug_assert_eq!(bytes.len(), eta_bits << 5);
+
+        match eta_bits {
             4 => Self::from_bytes_4(bytes),
             3 => Self::from_bytes_3(bytes),
             _ => unreachable!(),
@@ -443,7 +451,7 @@ impl Polynomial {
         r
     }
 
-    fn from_bytes_4(b: &[u8]) -> Self {
+    fn from_bytes_4(b: &[u8]) -> Result<Self, String> {
         let mut r = Self::new();
         let mut bi = 0;
         const ETA: i32 = 4;
@@ -452,14 +460,21 @@ impl Polynomial {
             let b0 = b[bi];
             bi += 1;
 
-            r.coeffs[i] = ETA - ((b0 & 0xf) as i32);
-            r.coeffs[i + 1] = ETA - ((b0 >> 4) as i32);
+            let r0 = (b0 & 0xf) as i32;
+            let r1 = (b0 >> 4) as i32;
+
+            if r0 > 8 || r1 > 8 {
+                return Err(String::from("Parsed value for ETA outside of valid range"));
+            }
+
+            r.coeffs[i] = ETA - r0;
+            r.coeffs[i + 1] = ETA - r1;
         }
 
-        r
+        Ok(r)
     }
 
-    fn from_bytes_3(b: &[u8]) -> Self {
+    fn from_bytes_3(b: &[u8]) -> Result<Self, String> {
         let mut r = Self::new();
         let mut bi = 0;
         const ETA: i32 = 2;
@@ -470,17 +485,30 @@ impl Polynomial {
             let b2 = b[bi + 2];
             bi += 3;
 
-            r.coeffs[i] = ETA - ((b0 & 0x7) as i32);
-            r.coeffs[i + 1] = ETA - (((b0 >> 3) & 0x7) as i32);
-            r.coeffs[i + 2] = ETA - ((((b0 >> 6) | (b1 << 2)) & 0x7) as i32);
-            r.coeffs[i + 3] = ETA - (((b1 >> 1) & 0x7) as i32);
-            r.coeffs[i + 4] = ETA - (((b1 >> 4) & 0x7) as i32);
-            r.coeffs[i + 5] = ETA - ((((b1 >> 7) | (b2 << 1)) & 0x7) as i32);
-            r.coeffs[i + 6] = ETA - (((b2 >> 2) & 0x7) as i32);
-            r.coeffs[i + 7] = ETA - (((b2 >> 5) & 0x7) as i32);
+            let r0 = (b0 & 0x7) as i32;
+            let r1 = ((b0 >> 3) & 0x7) as i32;
+            let r2 = (((b0 >> 6) | (b1 << 2)) & 0x7) as i32;
+            let r3 = ((b1 >> 1) & 0x7) as i32;
+            let r4 = ((b1 >> 4) & 0x7) as i32;
+            let r5 = (((b1 >> 7) | (b2 << 1)) & 0x7) as i32;
+            let r6 = ((b2 >> 2) & 0x7) as i32;
+            let r7 = ((b2 >> 5) & 0x7) as i32;
+
+            if r0 > 4 || r1 > 4 || r2 > 4 || r3 > 4 || r4 > 4 || r5 > 4 || r6 > 4 || r7 > 4 {
+                return Err(String::from("Parsed value for ETA outside of valid range"));
+            }
+
+            r.coeffs[i] = ETA - r0;
+            r.coeffs[i + 1] = ETA - r1;
+            r.coeffs[i + 2] = ETA - r2;
+            r.coeffs[i + 3] = ETA - r3;
+            r.coeffs[i + 4] = ETA - r4;
+            r.coeffs[i + 5] = ETA - r5;
+            r.coeffs[i + 6] = ETA - r6;
+            r.coeffs[i + 7] = ETA - r7;
         }
 
-        r
+        Ok(r)
     }
 
     fn to_bytes_20(&self, buf: &mut [u8]) {

@@ -86,11 +86,14 @@ Build the rust code and bindings.
 uv run maturin develop -r
 ```
 
-Run the test suite.
+Run the test suite. The test suite covers the following test vectors:
+- [NIST ACVP](https://github.com/usnistgov/ACVP-Server)
+- [Wycheproof](https://github.com/C2SP/wycheproof)
+- [CCTV Accumulated Tests](https://github.com/C2SP/CCTV/tree/main/ML-DSA/accumulated)
 
 ```bash
-cargo test     # tests the rust code
-uv run pytest  # tests the python code
+cargo test     # tests the rust code (generally internal interfaces)
+uv run pytest  # tests the python code (generally external interfaces)
 ```
 
 There are also slower tests for the higher iteration

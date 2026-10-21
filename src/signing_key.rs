@@ -50,8 +50,8 @@ impl<const K: usize, const L: usize> SigningKey<K, L> {
         let rho: [u8; 32] = rho.try_into().unwrap();
         let k: [u8; 32] = k.try_into().unwrap();
         let tr: [u8; 64] = tr.try_into().unwrap();
-        let s1 = Vector::<L>::from_bytes(s1_bytes, eta_bits);
-        let s2 = Vector::<K>::from_bytes(s2_bytes, eta_bits);
+        let s1 = Vector::<L>::from_bytes_eta(s1_bytes, eta_bits)?;
+        let s2 = Vector::<K>::from_bytes_eta(s2_bytes, eta_bits)?;
         let t0 = Vector::<K>::from_bytes(rest, D);
         let a = Matrix::<K, L>::expand_a(&rho);
 

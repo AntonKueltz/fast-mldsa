@@ -5,7 +5,7 @@ from parameterized import parameterized
 from fastmldsa import ML_DSA, ParameterSet, VerificationKey
 
 
-class TestSign(TestCase):
+class TestVerifyMlDsa65(TestCase):
     @parameterized.expand(
         [
             (

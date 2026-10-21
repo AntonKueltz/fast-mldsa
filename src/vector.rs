@@ -31,6 +31,22 @@ impl<const N: usize> Vector<N> {
         r
     }
 
+    pub(crate) fn from_bytes_eta(bytes: &[u8], eta_bits: usize) -> Result<Self, String> {
+        let sz = eta_bits << 5;
+        debug_assert_eq!(bytes.len(), N * sz);
+
+        let mut r = Self::new();
+        let (mut start, mut end) = (0, sz);
+
+        for i in 0..N {
+            r.entries[i] = Polynomial::from_bytes_eta(&bytes[start..end], eta_bits)?;
+            start = end;
+            end += sz;
+        }
+
+        Ok(r)
+    }
+
     pub(crate) fn expand_mask(rho: &[u8; 64], mu: usize, gamma: usize, v_size: usize) -> Self {
         let mut y = Self::new();
 

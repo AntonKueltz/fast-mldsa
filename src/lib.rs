@@ -100,13 +100,22 @@ impl PyVerificationKey {
     fn from_bytes(data: &[u8]) -> PyResult<Self> {
         match data.len() {
             1312 => Ok(Self {
-                inner: VkInner::P44(VerificationKey::<4, 4>::from_bytes(data).unwrap()),
+                inner: VkInner::P44(
+                    VerificationKey::<4, 4>::from_bytes(data)
+                        .map_err(|e| PyValueError::new_err(e))?,
+                ),
             }),
             1952 => Ok(Self {
-                inner: VkInner::P65(VerificationKey::<6, 5>::from_bytes(data).unwrap()),
+                inner: VkInner::P65(
+                    VerificationKey::<6, 5>::from_bytes(data)
+                        .map_err(|e| PyValueError::new_err(e))?,
+                ),
             }),
             2592 => Ok(Self {
-                inner: VkInner::P87(VerificationKey::<8, 7>::from_bytes(data).unwrap()),
+                inner: VkInner::P87(
+                    VerificationKey::<8, 7>::from_bytes(data)
+                        .map_err(|e| PyValueError::new_err(e))?,
+                ),
             }),
             n => Err(PyValueError::new_err(format!(
                 "Invalid verification key length {n}; expected 1312, 1952, or 2592"
@@ -145,13 +154,22 @@ impl PySigningKey {
     fn from_bytes(data: &[u8]) -> PyResult<Self> {
         match data.len() {
             2560 => Ok(Self {
-                inner: SkInner::P44(SigningKey::<4, 4>::from_bytes(data, 2).unwrap()),
+                inner: SkInner::P44(
+                    SigningKey::<4, 4>::from_bytes(data, 2)
+                        .map_err(|e| PyValueError::new_err(e))?,
+                ),
             }),
             4032 => Ok(Self {
-                inner: SkInner::P65(SigningKey::<6, 5>::from_bytes(data, 4).unwrap()),
+                inner: SkInner::P65(
+                    SigningKey::<6, 5>::from_bytes(data, 4)
+                        .map_err(|e| PyValueError::new_err(e))?,
+                ),
             }),
             4896 => Ok(Self {
-                inner: SkInner::P87(SigningKey::<8, 7>::from_bytes(data, 2).unwrap()),
+                inner: SkInner::P87(
+                    SigningKey::<8, 7>::from_bytes(data, 2)
+                        .map_err(|e| PyValueError::new_err(e))?,
+                ),
             }),
             n => Err(PyValueError::new_err(format!(
                 "Invalid signing key length {n}; expected 2560, 4032, or 4896"
