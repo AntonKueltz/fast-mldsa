@@ -16,6 +16,51 @@ sig = dsa.sign(sk, msg, ctx)  # signature over the message and context
 valid = dsa.verify(vk, msg, ctx, sig)  # check if the signature is valid
 ```
 
+## Keys from Seeds
+
+In some cases, it may be desirable to transmit a keypair as the seed it was
+generated from (for instance, where network bandwidth is a concern). In those
+cases the keypair can be regenerated from the seed. Note that the seed must be
+exactly 32 bytes long.
+
+> [!WARNING]
+> Use a cryptographically secure pseudorandom number generator (CSPRNG) if you generate a seed. If the seed can be guessed or recovered, then your signing key is compromised.
+
+```python
+from fastmldsa import ML_DSA
+
+dsa = ML_DSA()
+seed = b"\x00" * 32  # this would be a terrible seed - easy to guess
+vk, sk = dsa.key_gen(seed)  # verification and signing key from seed
+
+wrong_len = b"\x00" * 31
+vk, sk = dsa.key_gen(wrong_len)  # => ValueError
+```
+
+## Deterministic Signatures
+
+By default, this library uses the "hedged" version of the algorithm which generates
+32 random bytes as part of signature generation. You can also use the deterministic
+variant of signing, which sets those bytes to 0, as follows.
+
+```python
+from fastmldsa import ML_DSA
+
+dsa = ML_DSA()
+vk, sk = dsa.key_gen()  # verification and signing key
+msg, ctx = b"...", b"..."
+
+sig1 = dsa.sign(
+    sk, msg, ctx, deterministic=True
+)  # detrministic signature over the message and context
+sig2 = dsa.sign(sk, msg, ctx, deterministic=True)
+assert sig1 == sig2
+
+sig1 = dsa.sign(sk, msg, ctxt)  # "hedged" signature over the message and context
+sig2 = dsa.sign(sk, msg, ctxt)
+assert sig1 != sig2
+```
+
 ## Parameter Sets
 
 The default parameter set used is `ML-DSA-65` which is considered "Category 3" by NIST,

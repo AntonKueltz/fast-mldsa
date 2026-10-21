@@ -39,9 +39,14 @@ pub trait Dsa: sealed::Sealed {
 
     type SigBytes: AsRef<[u8]> + AsMut<[u8]> + Zeroize;
 
-    fn key_gen() -> (Self::VerKey, Self::SigKey);
+    fn key_gen(optional_seed: Option<&[u8; 32]>) -> (Self::VerKey, Self::SigKey);
 
-    fn sign(sk: &Self::SigKey, msg: &[u8], ctx: &[u8]) -> Option<Self::SigBytes>;
+    fn sign(
+        sk: &Self::SigKey,
+        msg: &[u8],
+        ctx: &[u8],
+        deterministic: bool,
+    ) -> Option<Self::SigBytes>;
 
     fn verify(pk: &Self::VerKey, msg: &[u8], ctx: &[u8], sig: &[u8]) -> bool;
 }
@@ -71,17 +76,23 @@ impl Dsa for MlDsa44 {
 
     type SigBytes = [u8; 2420];
 
-    fn key_gen() -> (Self::VerKey, Self::SigKey) {
-        key_gen_random::<Self, { Self::K }, { Self::L }>()
+    fn key_gen(optional_seed: Option<&[u8; 32]>) -> (Self::VerKey, Self::SigKey) {
+        key_gen_random::<Self, { Self::K }, { Self::L }>(optional_seed)
     }
 
-    fn sign(sk: &Self::SigKey, msg: &[u8], ctx: &[u8]) -> Option<Self::SigBytes> {
+    fn sign(
+        sk: &Self::SigKey,
+        msg: &[u8],
+        ctx: &[u8],
+        deterministic: bool,
+    ) -> Option<Self::SigBytes> {
         if ctx.len() > 255 {
             return None;
         }
 
         let mut sig = [0u8; 2420];
-        let success = sign_random::<Self, { Self::K }, { Self::L }>(sk, msg, ctx, &mut sig);
+        let success =
+            sign_random::<Self, { Self::K }, { Self::L }>(sk, msg, ctx, deterministic, &mut sig);
 
         match success {
             true => Some(sig),
@@ -123,17 +134,23 @@ impl Dsa for MlDsa65 {
 
     type SigBytes = [u8; 3309];
 
-    fn key_gen() -> (Self::VerKey, Self::SigKey) {
-        key_gen_random::<Self, { Self::K }, { Self::L }>()
+    fn key_gen(optional_seed: Option<&[u8; 32]>) -> (Self::VerKey, Self::SigKey) {
+        key_gen_random::<Self, { Self::K }, { Self::L }>(optional_seed)
     }
 
-    fn sign(sk: &Self::SigKey, msg: &[u8], ctx: &[u8]) -> Option<Self::SigBytes> {
+    fn sign(
+        sk: &Self::SigKey,
+        msg: &[u8],
+        ctx: &[u8],
+        deterministic: bool,
+    ) -> Option<Self::SigBytes> {
         if ctx.len() > 255 {
             return None;
         }
 
         let mut sig = [0u8; 3309];
-        let success = sign_random::<Self, { Self::K }, { Self::L }>(sk, msg, ctx, &mut sig);
+        let success =
+            sign_random::<Self, { Self::K }, { Self::L }>(sk, msg, ctx, deterministic, &mut sig);
 
         match success {
             true => Some(sig),
@@ -175,17 +192,23 @@ impl Dsa for MlDsa87 {
 
     type SigBytes = [u8; 4627];
 
-    fn key_gen() -> (Self::VerKey, Self::SigKey) {
-        key_gen_random::<Self, { Self::K }, { Self::L }>()
+    fn key_gen(optional_seed: Option<&[u8; 32]>) -> (Self::VerKey, Self::SigKey) {
+        key_gen_random::<Self, { Self::K }, { Self::L }>(optional_seed)
     }
 
-    fn sign(sk: &Self::SigKey, msg: &[u8], ctx: &[u8]) -> Option<Self::SigBytes> {
+    fn sign(
+        sk: &Self::SigKey,
+        msg: &[u8],
+        ctx: &[u8],
+        deterministic: bool,
+    ) -> Option<Self::SigBytes> {
         if ctx.len() > 255 {
             return None;
         }
 
         let mut sig = [0u8; 4627];
-        let success = sign_random::<Self, { Self::K }, { Self::L }>(sk, msg, ctx, &mut sig);
+        let success =
+            sign_random::<Self, { Self::K }, { Self::L }>(sk, msg, ctx, deterministic, &mut sig);
 
         match success {
             true => Some(sig),
@@ -202,14 +225,20 @@ impl Dsa for MlDsa87 {
     }
 }
 
-fn key_gen_random<P: Dsa, const K: usize, const L: usize>()
--> (VerificationKey<K, L>, SigningKey<K, L>) {
-    let mut seed = [0u8; 32];
-    getrandom::fill(&mut seed).expect("Rng failure.");
-    key_gen_internal::<P, K, L>(&seed)
+fn key_gen_random<P: Dsa, const K: usize, const L: usize>(
+    optional_seed: Option<&[u8; 32]>,
+) -> (VerificationKey<K, L>, SigningKey<K, L>) {
+    match optional_seed {
+        None => {
+            let mut seed = [0u8; 32];
+            getrandom::fill(&mut seed).expect("Rng failure.");
+            key_gen_internal::<P, K, L>(&seed)
+        }
+        Some(seed) => key_gen_internal::<P, K, L>(&seed),
+    }
 }
 
-fn key_gen_internal<P: Dsa, const K: usize, const L: usize>(
+pub(crate) fn key_gen_internal<P: Dsa, const K: usize, const L: usize>(
     seed: &[u8; 32],
 ) -> (VerificationKey<K, L>, SigningKey<K, L>) {
     let mut buf = [0u8; 128];
@@ -246,10 +275,15 @@ fn sign_random<P: Dsa, const K: usize, const L: usize>(
     sk: &SigningKey<K, L>,
     msg: &[u8],
     ctx: &[u8],
+    deterministic: bool,
     sig: &mut [u8],
 ) -> bool {
     let mut rnd = [0u8; 32];
-    if getrandom::fill(&mut rnd).is_ok() {
+
+    if deterministic {
+        sign_internal::<P, K, L>(sk, msg, ctx, &rnd, sig);
+        true
+    } else if getrandom::fill(&mut rnd).is_ok() {
         sign_internal::<P, K, L>(sk, msg, ctx, &rnd, sig);
         true
     } else {

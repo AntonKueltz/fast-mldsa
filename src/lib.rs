@@ -53,8 +53,8 @@ struct MlDsa {
     params: ParameterSet,
 }
 
-fn key_gen_impl<P: Dsa>() -> (P::VerKey, P::SigKey) {
-    P::key_gen()
+fn key_gen_impl<P: Dsa>(seed: Option<&[u8; 32]>) -> (P::VerKey, P::SigKey) {
+    P::key_gen(seed)
 }
 
 fn sign_impl<'py, P: Dsa>(
@@ -62,8 +62,9 @@ fn sign_impl<'py, P: Dsa>(
     sk: &P::SigKey,
     msg: &[u8],
     ctx: &[u8],
+    deterministic: bool,
 ) -> PyResult<Bound<'py, PyBytes>> {
-    match P::sign(sk, msg, ctx) {
+    match P::sign(sk, msg, ctx, deterministic) {
         Some(val) => Ok(PyBytes::new(py, val.as_ref())),
         None => Err(PyValueError::new_err("Error computing signature.")),
     }
@@ -169,60 +170,68 @@ impl MlDsa {
         }
     }
 
-    fn key_gen(&self) -> (PyVerificationKey, PySigningKey) {
+    #[pyo3(signature = (seed = None))]
+    fn key_gen(&self, mut seed: Option<Vec<u8>>) -> PyResult<(PyVerificationKey, PySigningKey)> {
+        if seed.as_mut().is_some_and(|x| x.len() != 32) {
+            return Err(PyValueError::new_err("Seed must be exactly 32 bytes long"));
+        }
+        let seed_bytes: Option<&[u8; 32]> = seed.as_deref().and_then(|slice| slice.try_into().ok());
+
         match self.params {
             ParameterSet::MlDsa44 => {
-                let (pk, sk) = key_gen_impl::<MlDsa44>();
-                (
+                let (pk, sk) = key_gen_impl::<MlDsa44>(seed_bytes);
+                Ok((
                     PyVerificationKey {
                         inner: VkInner::P44(pk),
                     },
                     PySigningKey {
                         inner: SkInner::P44(sk),
                     },
-                )
+                ))
             }
             ParameterSet::MlDsa65 => {
-                let (pk, sk) = key_gen_impl::<MlDsa65>();
-                (
+                let (pk, sk) = key_gen_impl::<MlDsa65>(seed_bytes);
+                Ok((
                     PyVerificationKey {
                         inner: VkInner::P65(pk),
                     },
                     PySigningKey {
                         inner: SkInner::P65(sk),
                     },
-                )
+                ))
             }
             ParameterSet::MlDsa87 => {
-                let (pk, sk) = key_gen_impl::<MlDsa87>();
-                (
+                let (pk, sk) = key_gen_impl::<MlDsa87>(seed_bytes);
+                Ok((
                     PyVerificationKey {
                         inner: VkInner::P87(pk),
                     },
                     PySigningKey {
                         inner: SkInner::P87(sk),
                     },
-                )
+                ))
             }
         }
     }
 
+    #[pyo3(signature = (sk, msg, ctx, deterministic = false))]
     fn sign<'py>(
         &self,
         py: Python<'py>,
         sk: &PySigningKey,
         msg: Vec<u8>,
         ctx: Vec<u8>,
+        deterministic: bool,
     ) -> PyResult<Bound<'py, PyBytes>> {
         match (self.params, &sk.inner) {
             (ParameterSet::MlDsa44, SkInner::P44(k)) => {
-                sign_impl::<MlDsa44>(py, k, msg.as_slice(), ctx.as_slice())
+                sign_impl::<MlDsa44>(py, k, msg.as_slice(), ctx.as_slice(), deterministic)
             }
             (ParameterSet::MlDsa65, SkInner::P65(k)) => {
-                sign_impl::<MlDsa65>(py, k, msg.as_slice(), ctx.as_slice())
+                sign_impl::<MlDsa65>(py, k, msg.as_slice(), ctx.as_slice(), deterministic)
             }
             (ParameterSet::MlDsa87, SkInner::P87(k)) => {
-                sign_impl::<MlDsa87>(py, k, msg.as_slice(), ctx.as_slice())
+                sign_impl::<MlDsa87>(py, k, msg.as_slice(), ctx.as_slice(), deterministic)
             }
             _ => {
                 return Err(PyValueError::new_err(

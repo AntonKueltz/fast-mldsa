@@ -30,6 +30,7 @@ dev = [
     "ipython>=9.17.1",
     "maturin>=1.15.0",
     "pre-commit>=4.7.0",
+    "pycryptodome>=4.1.0",
     "pytest>=9.1.1",
 ]
 
