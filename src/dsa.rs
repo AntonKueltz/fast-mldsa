@@ -2,9 +2,10 @@ use zeroize::Zeroize;
 
 use crate::hash::h;
 use crate::matrix::Matrix;
+use crate::polynomial::{N, Polynomial};
 use crate::signer::Signer;
 use crate::signing_key::SigningKey;
-use crate::vector::expand_s;
+use crate::vector::{Vector, expand_s};
 use crate::verification_key::VerificationKey;
 
 mod sealed {
@@ -41,6 +42,8 @@ pub trait Dsa: sealed::Sealed {
     fn key_gen() -> (Self::VerKey, Self::SigKey);
 
     fn sign(sk: &Self::SigKey, msg: &[u8], ctx: &[u8]) -> Option<Self::SigBytes>;
+
+    fn verify(pk: &Self::VerKey, msg: &[u8], ctx: &[u8], sig: &[u8]) -> bool;
 }
 
 impl sealed::Sealed for MlDsa44 {}
@@ -84,6 +87,14 @@ impl Dsa for MlDsa44 {
             true => Some(sig),
             false => None,
         }
+    }
+
+    fn verify(pk: &Self::VerKey, msg: &[u8], ctx: &[u8], sig: &[u8]) -> bool {
+        if ctx.len() > 255 {
+            return false;
+        }
+
+        verify_internal::<Self, { Self::K }, { Self::L }>(pk, msg, ctx, sig)
     }
 }
 
@@ -129,6 +140,14 @@ impl Dsa for MlDsa65 {
             false => None,
         }
     }
+
+    fn verify(pk: &Self::VerKey, msg: &[u8], ctx: &[u8], sig: &[u8]) -> bool {
+        if ctx.len() > 255 {
+            return false;
+        }
+
+        verify_internal::<Self, { Self::K }, { Self::L }>(pk, msg, ctx, sig)
+    }
 }
 
 impl sealed::Sealed for MlDsa87 {}
@@ -172,6 +191,14 @@ impl Dsa for MlDsa87 {
             true => Some(sig),
             false => None,
         }
+    }
+
+    fn verify(pk: &Self::VerKey, msg: &[u8], ctx: &[u8], sig: &[u8]) -> bool {
+        if ctx.len() > 255 {
+            return false;
+        }
+
+        verify_internal::<Self, { Self::K }, { Self::L }>(pk, msg, ctx, sig)
     }
 }
 
@@ -241,6 +268,67 @@ fn sign_internal<P: Dsa, const K: usize, const L: usize>(
     signer.sign::<P>(sig);
 }
 
+fn verify_internal<P: Dsa, const K: usize, const L: usize>(
+    pk: &VerificationKey<K, L>,
+    msg: &[u8],
+    ctx: &[u8],
+    sig: &[u8],
+) -> bool {
+    let (zlen, hlen) = ((L * (P::GAMMA1 + 1) << 5), P::OMEGA + K);
+    if sig.len() != P::C_SZ + zlen + hlen {
+        return false;
+    }
+
+    let (chash, rest) = sig.split_at(P::C_SZ);
+    let (zbytes, hbytes) = rest.split_at(zlen);
+
+    let hint = match Vector::<K>::from_hint_bytes(hbytes, P::OMEGA) {
+        Some(p) => p,
+        None => return false,
+    };
+
+    let mut z = Vector::<L>::from_bytes(zbytes, P::GAMMA1 + 1);
+    if !z.norm_within_limit(((1 << P::GAMMA1) - P::BETA) as i32) {
+        return false;
+    }
+    z.ntt();
+
+    let tr = pk.hash();
+    let mut mu = [0u8; 64];
+    h(
+        &mut mu,
+        &[tr.as_slice(), &[0u8], &[ctx.len() as u8], ctx, msg],
+    );
+    let mut c = Polynomial::sample_ball(chash, P::TAU);
+    c.ntt();
+
+    let mut t1_2d = Vector::<K>::new();
+    let t1 = pk.t1();
+    for i in 0..K {
+        for j in 0..N {
+            t1_2d.entries[i].coeffs[j] = t1.entries[i].coeffs[j] << 13;
+        }
+    }
+    t1_2d.ntt();
+
+    let mut w_approx = pk.a().mul_vec(&z);
+    w_approx.sub_acc(&t1_2d.mul_poly(&c));
+    w_approx.reduce();
+    w_approx.inv_ntt();
+    w_approx.cond_add();
+    let w1 = Vector::<K>::use_hint(&hint, &w_approx, P::GAMMA2);
+
+    let mut c_buf = [0u8; 64];
+    let chash_ = &mut c_buf[..P::C_SZ];
+    let mut w1_buf = [0u8; 1024];
+    let w1_bytes = &mut w1_buf[..P::W1_SZ];
+
+    w1.to_bytes_w1(w1_bytes, P::GAMMA2, P::W1_SZ / K);
+    h(chash_, &[mu.as_slice(), w1_bytes]);
+
+    chash == chash_
+}
+
 #[cfg(test)]
 #[path = "unit_tests/key_gen_test.rs"]
 mod key_gen_test;
@@ -248,3 +336,7 @@ mod key_gen_test;
 #[cfg(test)]
 #[path = "unit_tests/sign_test.rs"]
 mod sign_test;
+
+#[cfg(test)]
+#[path = "unit_tests/verify_test.rs"]
+mod verify_test;

@@ -39,4 +39,25 @@ impl<const K: usize, const L: usize> VerificationKey<K, L> {
             end += 320;
         }
     }
+
+    pub(crate) fn from_bytes(bytes: &[u8]) -> Result<Self, String> {
+        if bytes.len() != 32 + K * 320 {
+            return Err(String::from("Invalid length for byte encoding."));
+        }
+
+        let (rho, t1_bytes) = bytes.split_at(32);
+        let t1 = Vector::<K>::from_bytes(t1_bytes, 10);
+        let rho: [u8; 32] = rho.try_into().unwrap();
+        let a = Matrix::<K, L>::expand_a(&rho);
+
+        return Ok(Self { t1, rho, a });
+    }
+
+    pub(crate) fn t1(&self) -> &Vector<K> {
+        &self.t1
+    }
+
+    pub(crate) fn a(&self) -> &Matrix<K, L> {
+        &self.a
+    }
 }

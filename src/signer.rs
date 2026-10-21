@@ -62,12 +62,12 @@ impl<'a, const K: usize, const L: usize> Signer<'a, K, L> {
             let (w1, mut w0) = w.decompose(P::GAMMA2);
 
             let mut c_buf = [0u8; 64];
-            let mut chash = &mut c_buf[..P::C_SZ];
+            let chash = &mut c_buf[..P::C_SZ];
             let mut w1_buf = [0u8; 1024];
-            let mut w1_bytes = &mut w1_buf[..P::W1_SZ];
+            let w1_bytes = &mut w1_buf[..P::W1_SZ];
 
-            w1.to_bytes_w1(&mut w1_bytes, P::GAMMA2, P::W1_SZ / K);
-            h(&mut chash, &[self.mu.as_slice(), w1_bytes]);
+            w1.to_bytes_w1(w1_bytes, P::GAMMA2, P::W1_SZ / K);
+            h(chash, &[self.mu.as_slice(), w1_bytes]);
             let mut c_hat = Polynomial::sample_ball(&chash, P::TAU);
             c_hat.ntt();
 

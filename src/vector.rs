@@ -57,6 +57,35 @@ impl<const N: usize> Vector<N> {
         r
     }
 
+    pub(crate) fn from_hint_bytes(bytes: &[u8], omega: usize) -> Option<Self> {
+        let mut h = Self::new();
+        let mut k: usize = 0;
+
+        for i in 0..N {
+            if bytes[omega + i] < k as u8 || bytes[omega + i] > omega as u8 {
+                return None;
+            }
+
+            for j in k..(bytes[omega + i] as usize) {
+                if j > k && bytes[j] <= bytes[j - 1] {
+                    return None;
+                }
+
+                h.entries[i].coeffs[bytes[j] as usize] = 1;
+            }
+
+            k = bytes[omega + i] as usize;
+        }
+
+        for j in k..omega {
+            if bytes[j] != 0 {
+                return None;
+            }
+        }
+
+        Some(h)
+    }
+
     pub(crate) fn pow2_round(&self) -> (Self, Self) {
         let mut hi = Self::new();
         let mut lo = Self::new();
@@ -124,6 +153,16 @@ impl<const N: usize> Vector<N> {
         ones
     }
 
+    pub(crate) fn use_hint(hint: &Self, v: &Self, gamma: usize) -> Self {
+        let mut r = Self::new();
+
+        for i in 0..N {
+            r.entries[i].use_hint(&hint.entries[i], &v.entries[i], gamma);
+        }
+
+        r
+    }
+
     pub(crate) fn add_acc(&mut self, other: &Vector<N>) {
         for i in 0..N {
             self.entries[i].add_acc(&other.entries[i]);
@@ -133,17 +172,6 @@ impl<const N: usize> Vector<N> {
     pub(crate) fn sub_acc(&mut self, other: &Vector<N>) {
         for i in 0..N {
             self.entries[i].sub_acc(&other.entries[i]);
-        }
-    }
-
-    pub(crate) fn to_bytes(&self, buf: &mut [u8], d: usize) {
-        debug_assert_eq!(buf.len(), (d << 5) * N);
-
-        let (mut start, mut end) = (0, 320);
-        for i in 0..N {
-            self.entries[i].to_bytes(&mut buf[start..end], d);
-            start = end;
-            end += 320;
         }
     }
 

@@ -1,4 +1,5 @@
-"""Benchmark ML-DSA key generation and signing: ops/sec for each parameter set.
+"""Benchmark ML-DSA key generation, signing and verification: ops/sec for each
+parameter set.
 
 Usage:
 
@@ -172,9 +173,35 @@ def make_sign(case: Case) -> Callable[[], object]:
     return lambda: dsa.sign(sk, MSG, CTX)
 
 
+def make_verify(case: Case) -> Callable[[], object]:
+    dsa, vk, sk = _keys(case)  # key generation is outside the timed region
+    sig = dsa.sign(sk, MSG, CTX)  # so is signing
+
+    # Correctness: the signature verifies, and tampered inputs are rejected.
+    _check(dsa.verify(vk, MSG, CTX, sig) is True, f"{case.name}: valid sig rejected")
+    bad_msg = bytes([MSG[0] ^ 1]) + MSG[1:]
+    _check(
+        dsa.verify(vk, bad_msg, CTX, sig) is False,
+        f"{case.name}: sig accepted for a modified message",
+    )
+    _check(
+        dsa.verify(vk, MSG, CTX + b"!", sig) is False,
+        f"{case.name}: sig accepted for a different context",
+    )
+    bad_sig = bytes([sig[0] ^ 1]) + sig[1:]
+    _check(
+        dsa.verify(vk, MSG, CTX, bad_sig) is False,
+        f"{case.name}: modified sig accepted",
+    )
+
+    # Timed region is the success path only.
+    return lambda: dsa.verify(vk, MSG, CTX, sig)
+
+
 OPS: dict[str, Callable[[Case], Callable[[], object]]] = {
     "keygen": make_keygen,
     "sign": make_sign,
+    "verify": make_verify,
 }
 
 

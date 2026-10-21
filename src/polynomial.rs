@@ -146,6 +146,7 @@ impl Polynomial {
             20 => Self::from_bytes_20(bytes),
             18 => Self::from_bytes_18(bytes),
             13 => Self::from_bytes_13(bytes),
+            10 => Self::from_bytes_10(bytes),
             4 => Self::from_bytes_4(bytes),
             3 => Self::from_bytes_3(bytes),
             _ => unreachable!(),
@@ -278,27 +279,16 @@ impl Polynomial {
     }
 
     pub(crate) fn decompose(&self, hi: &mut Self, lo: &mut Self, gamma: usize) {
-        const BIT_21: i32 = 1 << 21;
-        const BIT_23: i32 = 1 << 23;
-
         for i in 0..N {
-            let a = self.coeffs[i];
-            let mut a_hi = (a + 127) >> 7;
-
-            if gamma == 261888 {
-                a_hi = ((a_hi * 1025 + BIT_21) >> 22) & 0xf;
-            } else if gamma == 95232 {
-                a_hi = (a_hi * 11275 + BIT_23) >> 24;
-                a_hi ^= ((43 - a_hi) >> 31) & a_hi;
-            } else {
-                unreachable!()
-            }
-
-            let mut a_lo = a - a_hi * (gamma << 1) as i32;
-            a_lo -= ((((Q - 1) >> 1) - a_lo) >> 31) & Q;
-
+            let (a_hi, a_lo) = decompose(self.coeffs[i], gamma);
             hi.coeffs[i] = a_hi;
             lo.coeffs[i] = a_lo;
+        }
+    }
+
+    pub(crate) fn use_hint(&mut self, hint: &Self, p: &Self, gamma: usize) {
+        for i in 0..N {
+            self.coeffs[i] = use_hint(p.coeffs[i], hint.coeffs[i], gamma);
         }
     }
 
@@ -420,6 +410,34 @@ impl Polynomial {
             r.coeffs[i + 7] = C - ((r7 & 0x1fff) as i32);
 
             bi += 13;
+        }
+
+        r
+    }
+
+    fn from_bytes_10(b: &[u8]) -> Self {
+        let mut r = Self::new();
+        let mut bi = 0;
+
+        for i in (0..N).step_by(4) {
+            let b0 = b[bi];
+            let b1 = b[bi + 1];
+            let b2 = b[bi + 2];
+            let b3 = b[bi + 3];
+            let b4 = b[bi + 4];
+            bi += 5;
+
+            let r0 = (b0 as u16) | ((b1 as u16) << 8);
+            r.coeffs[i] = (r0 & 0x3ff) as i32;
+
+            let r1 = ((b1 as u16) >> 2) | ((b2 as u16) << 6);
+            r.coeffs[i + 1] = (r1 & 0x3ff) as i32;
+
+            let r2 = ((b2 as u16) >> 4) | ((b3 as u16) << 4);
+            r.coeffs[i + 2] = (r2 & 0x3ff) as i32;
+
+            let r3 = ((b3 as u16) >> 6) | ((b4 as u16) << 2);
+            r.coeffs[i + 3] = (r3 & 0x3ff) as i32;
         }
 
         r
@@ -591,6 +609,53 @@ impl Polynomial {
             buf[bi + 2] = ((w5 >> 1) as u8) | ((w6 << 2) as u8) | ((w7 << 5) as u8);
             bi += 3;
         }
+    }
+}
+
+#[inline]
+pub(crate) fn decompose(a: i32, gamma: usize) -> (i32, i32) {
+    const BIT_21: i32 = 1 << 21;
+    const BIT_23: i32 = 1 << 23;
+
+    let mut a_hi = (a + 127) >> 7;
+
+    if gamma == 261888 {
+        a_hi = ((a_hi * 1025 + BIT_21) >> 22) & 0xf;
+    } else if gamma == 95232 {
+        a_hi = (a_hi * 11275 + BIT_23) >> 24;
+        a_hi ^= ((43 - a_hi) >> 31) & a_hi;
+    } else {
+        unreachable!()
+    }
+
+    let mut a_lo = a - a_hi * (gamma << 1) as i32;
+    a_lo -= ((((Q as i32 - 1) >> 1) - a_lo) >> 31) & Q as i32;
+
+    (a_hi, a_lo)
+}
+
+#[inline]
+pub(crate) fn use_hint(a: i32, hint: i32, gamma: usize) -> i32 {
+    let (a1, a0) = decompose(a, gamma);
+
+    if hint == 0 {
+        return a1;
+    }
+
+    if gamma == 261888 {
+        if a0 > 0 {
+            (a1 + 1) & 0xf
+        } else {
+            (a1 - 1) & 0xf
+        }
+    } else if gamma == 95232 {
+        if a0 > 0 {
+            if a1 == 43 { 0 } else { a1 + 1 }
+        } else {
+            if a1 == 0 { 43 } else { a1 - 1 }
+        }
+    } else {
+        unreachable!()
     }
 }
 

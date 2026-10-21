@@ -94,6 +94,24 @@ impl PyVerificationKey {
     fn __bytes__<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyBytes>> {
         self.to_bytes(py)
     }
+
+    #[staticmethod]
+    fn from_bytes(data: &[u8]) -> PyResult<Self> {
+        match data.len() {
+            1312 => Ok(Self {
+                inner: VkInner::P44(VerificationKey::<4, 4>::from_bytes(data).unwrap()),
+            }),
+            1952 => Ok(Self {
+                inner: VkInner::P65(VerificationKey::<6, 5>::from_bytes(data).unwrap()),
+            }),
+            2592 => Ok(Self {
+                inner: VkInner::P87(VerificationKey::<8, 7>::from_bytes(data).unwrap()),
+            }),
+            n => Err(PyValueError::new_err(format!(
+                "Invalid signing key length {n}; expected 1312, 1952, or 2592"
+            ))),
+        }
+    }
 }
 
 #[pymethods]
@@ -206,6 +224,40 @@ impl MlDsa {
             (ParameterSet::MlDsa87, SkInner::P87(k)) => {
                 sign_impl::<MlDsa87>(py, k, msg.as_slice(), ctx.as_slice())
             }
+            _ => {
+                return Err(PyValueError::new_err(
+                    "Key does not match this ML_DSA parameter set",
+                ));
+            }
+        }
+    }
+
+    fn verify(
+        &self,
+        vk: &PyVerificationKey,
+        msg: Vec<u8>,
+        ctx: Vec<u8>,
+        sig: Vec<u8>,
+    ) -> PyResult<bool> {
+        match (self.params, &vk.inner) {
+            (ParameterSet::MlDsa44, VkInner::P44(k)) => Ok(MlDsa44::verify(
+                k,
+                msg.as_slice(),
+                ctx.as_slice(),
+                sig.as_slice(),
+            )),
+            (ParameterSet::MlDsa65, VkInner::P65(k)) => Ok(MlDsa65::verify(
+                k,
+                msg.as_slice(),
+                ctx.as_slice(),
+                sig.as_slice(),
+            )),
+            (ParameterSet::MlDsa87, VkInner::P87(k)) => Ok(MlDsa87::verify(
+                k,
+                msg.as_slice(),
+                ctx.as_slice(),
+                sig.as_slice(),
+            )),
             _ => {
                 return Err(PyValueError::new_err(
                     "Key does not match this ML_DSA parameter set",

@@ -9,10 +9,6 @@ pub(crate) fn mont_q(n: i64) -> i32 {
     (t >> 32) as i32
 }
 
-pub(crate) fn norm_q(n: i32) -> i32 {
-    cond_add_q(reduce_q(n))
-}
-
 pub(crate) fn reduce_q(n: i32) -> i32 {
     let t = (n + BIT_22) >> 23;
     n - t * (Q as i32)
