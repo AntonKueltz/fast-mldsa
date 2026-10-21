@@ -109,7 +109,7 @@ impl PyVerificationKey {
                 inner: VkInner::P87(VerificationKey::<8, 7>::from_bytes(data).unwrap()),
             }),
             n => Err(PyValueError::new_err(format!(
-                "Invalid signing key length {n}; expected 1312, 1952, or 2592"
+                "Invalid verification key length {n}; expected 1312, 1952, or 2592"
             ))),
         }
     }
