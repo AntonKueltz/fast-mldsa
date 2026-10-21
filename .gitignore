@@ -74,3 +74,5 @@ docs/_build/
 
 gen*.py
 tmp*
+perf.data
+flamegraph.svg

@@ -106,6 +106,10 @@ uv run pytest -m slow
 
 # Performance
 
+```bash
+uv run benchmark
+```
+
 Below are some benchmarks for each parameter set, running on 64bit OS with a i9-9900k and
 python3.14.
 
@@ -144,4 +148,17 @@ verify         ML_DSA_65             42,286      23.6        42,168        42,56
 keygen         ML_DSA_87              5,928     168.7         5,808         5,977          76
 sign           ML_DSA_87              5,963     167.7         5,674         6,178         206
 verify         ML_DSA_87             31,839      31.4        31,242        32,059         343
+```
+
+## Rust Benchmarking
+
+You can also run benchmarks for the rust code, as well as generate flamegraphs. This
+can be handy when performance tuning, both for catching regressions and for identifying
+candidate areas for further optimization.
+
+```bash
+# run the benchmark for all operations over all parameter sets
+cargo bench --bench dsa
+# generate a flamegraph for the sign operation using the ML-DSA-44 parameter set
+RUSTFLAGS="-C force-frame-pointers=yes" cargo flamegraph --bench dsa -- --bench --profile-time 5 "sign/44"
 ```

@@ -6,10 +6,20 @@ edition = "2024"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
 name = "ml_dsa"
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 getrandom = "0.4.3"
 pyo3 = "0.29.0"
 shake = "0.1.0"
 zeroize = "1.9.1"
+
+[dev-dependencies]
+criterion = "0.8.2"
+
+[[bench]]
+name = "dsa"
+harness = false
+
+[profile.bench]
+debug = true
