@@ -121,6 +121,24 @@ impl PySigningKey {
     fn __bytes__<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyBytes>> {
         self.to_bytes(py)
     }
+
+    #[staticmethod]
+    fn from_bytes(data: &[u8]) -> PyResult<Self> {
+        match data.len() {
+            2560 => Ok(Self {
+                inner: SkInner::P44(SigningKey::<4, 4>::from_bytes(data, 2).unwrap()),
+            }),
+            4032 => Ok(Self {
+                inner: SkInner::P65(SigningKey::<6, 5>::from_bytes(data, 4).unwrap()),
+            }),
+            4896 => Ok(Self {
+                inner: SkInner::P87(SigningKey::<8, 7>::from_bytes(data, 2).unwrap()),
+            }),
+            n => Err(PyValueError::new_err(format!(
+                "Invalid signing key length {n}; expected 2560, 4032, or 4896"
+            ))),
+        }
+    }
 }
 
 #[pymethods]
