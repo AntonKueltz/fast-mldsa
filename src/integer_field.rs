@@ -3,7 +3,7 @@ const QINV: i64 = 58728449;
 
 const BIT_22: i32 = 1 << 22;
 
-pub(crate) fn mont_q(n: i64) -> i32 {
+pub(crate) const fn mont_q(n: i64) -> i32 {
     let m = ((n as i32) as i64 * QINV) as i32;
     let t = n - (m as i64) * Q;
     (t >> 32) as i32

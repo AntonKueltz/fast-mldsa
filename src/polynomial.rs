@@ -199,31 +199,32 @@ impl Polynomial {
 
     pub(crate) fn inv_ntt(&mut self) {
         const F: i64 = 41978;
+        const FZ: i64 = mont_q(F * (-(ZETAS[1] as i64))) as i64;
+
         let mut m = N;
         let mut len = 1;
 
-        while len < N {
-            let mut start = 0;
-
-            while start < N {
+        while len < N / 2 {
+            for block in self.coeffs.chunks_exact_mut(2 * len) {
                 m -= 1;
-                let z = -ZETAS[m];
+                let z = -(ZETAS[m] as i64);
 
-                for j in start..(start + len) {
-                    let t = self.coeffs[j];
-                    self.coeffs[j] = t + self.coeffs[j + len];
-                    self.coeffs[j + len] = t - self.coeffs[j + len];
-                    self.coeffs[j + len] = mont_q((z as i64) * (self.coeffs[j + len] as i64));
+                let (lo, hi) = block.split_at_mut(len);
+                for (j, jlen) in lo.iter_mut().zip(hi.iter_mut()) {
+                    let t = *j;
+                    *j = t + *jlen;
+                    *jlen = mont_q(z * (t - *jlen) as i64);
                 }
-
-                start += len << 1;
             }
 
             len <<= 1;
         }
 
-        for j in 0..N {
-            self.coeffs[j] = mont_q(F * (self.coeffs[j] as i64))
+        let (lo, hi) = self.coeffs.split_at_mut(N / 2);
+        for (j, jlen) in lo.iter_mut().zip(hi.iter_mut()) {
+            let t = *j;
+            *j = mont_q(F * (t + *jlen) as i64);
+            *jlen = mont_q(FZ * (t - *jlen) as i64);
         }
     }
 
