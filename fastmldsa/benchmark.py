@@ -178,24 +178,24 @@ def make_verify(case: Case) -> Callable[[], object]:
     sig = dsa.sign(sk, MSG, CTX)  # so is signing
 
     # Correctness: the signature verifies, and tampered inputs are rejected.
-    _check(dsa.verify(vk, MSG, CTX, sig) is True, f"{case.name}: valid sig rejected")
+    _check(dsa.verify(vk, sig, MSG, CTX) is True, f"{case.name}: valid sig rejected")
     bad_msg = bytes([MSG[0] ^ 1]) + MSG[1:]
     _check(
-        dsa.verify(vk, bad_msg, CTX, sig) is False,
+        dsa.verify(vk, sig, bad_msg, CTX) is False,
         f"{case.name}: sig accepted for a modified message",
     )
     _check(
-        dsa.verify(vk, MSG, CTX + b"!", sig) is False,
+        dsa.verify(vk, sig, MSG, CTX + b"!") is False,
         f"{case.name}: sig accepted for a different context",
     )
     bad_sig = bytes([sig[0] ^ 1]) + sig[1:]
     _check(
-        dsa.verify(vk, MSG, CTX, bad_sig) is False,
+        dsa.verify(vk, bad_sig, MSG, CTX) is False,
         f"{case.name}: modified sig accepted",
     )
 
     # Timed region is the success path only.
-    return lambda: dsa.verify(vk, MSG, CTX, sig)
+    return lambda: dsa.verify(vk, sig, MSG, CTX)
 
 
 OPS: dict[str, Callable[[Case], Callable[[], object]]] = {

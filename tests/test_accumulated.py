@@ -18,7 +18,7 @@ class TestAccumulated(TestCase):
             a.update(bytes(pk))
             sig = dsa.sign(sk, b"", b"", deterministic=True)
             a.update(sig)
-            assert dsa.verify(pk, b"", b"", sig)
+            assert dsa.verify(pk, sig, b"", b"")
 
         return a.read(32)
 

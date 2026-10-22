@@ -1858,7 +1858,7 @@ class TestVerifyMlDsa87(TestCase):
             ),
         ]
     )
-    def test_sign(
+    def test_verify(
         self,
         name: str,
         pk_bytes: bytes,
@@ -1874,5 +1874,5 @@ class TestVerifyMlDsa87(TestCase):
         except ValueError:
             self.assertFalse(expected)
         else:
-            actual = dsa.verify(pk, msg, ctx, sig)
+            actual = dsa.verify(pk, sig, msg, ctx)
             self.assertIs(actual, expected)

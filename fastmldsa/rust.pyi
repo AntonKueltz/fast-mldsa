@@ -23,8 +23,12 @@ class ML_DSA:
         self, seed: bytes | None = None
     ) -> tuple[VerificationKey, SigningKey]: ...
     def sign(
-        self, sk: SigningKey, msg: bytes, ctx: bytes, deterministic: bool = False
+        self,
+        sk: SigningKey,
+        msg: bytes,
+        ctx: bytes | None = None,
+        deterministic: bool = False,
     ) -> bytes: ...
     def verify(
-        self, vk: VerificationKey, msg: bytes, ctx: bytes, sig: bytes
+        self, vk: VerificationKey, sig: bytes, msg: bytes, ctx: bytes | None = None
     ) -> bool: ...

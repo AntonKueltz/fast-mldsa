@@ -13,7 +13,10 @@ vk, sk = dsa.key_gen()  # verification and signing key
 
 msg, ctx = b"...", b"..."
 sig = dsa.sign(sk, msg, ctx)  # signature over the message and context
-valid = dsa.verify(vk, msg, ctx, sig)  # check if the signature is valid
+valid = dsa.verify(vk, sig, msg, ctx)  # check if the signature is valid
+
+# you can also sign with no context, which is equivalent to a context of b""
+sig = dsa.sign(sk, msg)
 ```
 
 ## Keys from Seeds
@@ -72,7 +75,7 @@ from fastmldsa import ML_DSA, ParameterSet
 
 dsa = ML_DSA(ParameterSet.ML_DSA_87)
 vk, sk = dsa.key_gen()  # verification and signing key for ML-DSA-87 parameter set
-valid = dsa.verify(vk, msg, ctx, sig)  # check if the signature is valid
+valid = dsa.verify(vk, sig, msg, ctx)  # check if the signature is valid
 ```
 
 # Development

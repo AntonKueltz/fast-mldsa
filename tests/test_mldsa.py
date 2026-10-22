@@ -14,7 +14,7 @@ class Test_ML_DSA(TestCase):
         for _ in range(ROUNDS):
             msg, ctx = randbytes(randint(8, 1024)), randbytes(randint(0, 128))
             sig = dsa.sign(sk, msg, ctx)
-            assert dsa.verify(vk, msg, ctx, sig)
+            assert dsa.verify(vk, sig, msg, ctx)
 
     def test_mldsa65(self):
         dsa = ML_DSA(ParameterSet.ML_DSA_65)
@@ -23,7 +23,7 @@ class Test_ML_DSA(TestCase):
         for _ in range(ROUNDS):
             msg, ctx = randbytes(randint(8, 1024)), randbytes(randint(0, 128))
             sig = dsa.sign(sk, msg, ctx)
-            assert dsa.verify(vk, msg, ctx, sig)
+            assert dsa.verify(vk, sig, msg, ctx)
 
     def test_mldsa87(self):
         dsa = ML_DSA(ParameterSet.ML_DSA_87)
@@ -32,4 +32,4 @@ class Test_ML_DSA(TestCase):
         for _ in range(ROUNDS):
             msg, ctx = randbytes(randint(8, 1024)), randbytes(randint(0, 128))
             sig = dsa.sign(sk, msg, ctx)
-            assert dsa.verify(vk, msg, ctx, sig)
+            assert dsa.verify(vk, sig, msg, ctx)

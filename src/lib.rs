@@ -189,7 +189,7 @@ impl MlDsa {
     }
 
     #[pyo3(signature = (seed = None))]
-    fn key_gen(&self, mut seed: Option<Vec<u8>>) -> PyResult<(PyVerificationKey, PySigningKey)> {
+    fn key_gen(&self, mut seed: Option<&[u8]>) -> PyResult<(PyVerificationKey, PySigningKey)> {
         if seed.as_mut().is_some_and(|x| x.len() != 32) {
             return Err(PyValueError::new_err("Seed must be exactly 32 bytes long"));
         }
@@ -232,24 +232,26 @@ impl MlDsa {
         }
     }
 
-    #[pyo3(signature = (sk, msg, ctx, deterministic = false))]
+    #[pyo3(signature = (sk, msg, ctx = None, deterministic = false))]
     fn sign<'py>(
         &self,
         py: Python<'py>,
         sk: &PySigningKey,
-        msg: Vec<u8>,
-        ctx: Vec<u8>,
+        msg: &[u8],
+        ctx: Option<&[u8]>,
         deterministic: bool,
     ) -> PyResult<Bound<'py, PyBytes>> {
+        let ctx = ctx.unwrap_or(&[]);
+
         match (self.params, &sk.inner) {
             (ParameterSet::MlDsa44, SkInner::P44(k)) => {
-                sign_impl::<MlDsa44>(py, k, msg.as_slice(), ctx.as_slice(), deterministic)
+                sign_impl::<MlDsa44>(py, k, msg, ctx, deterministic)
             }
             (ParameterSet::MlDsa65, SkInner::P65(k)) => {
-                sign_impl::<MlDsa65>(py, k, msg.as_slice(), ctx.as_slice(), deterministic)
+                sign_impl::<MlDsa65>(py, k, msg, ctx, deterministic)
             }
             (ParameterSet::MlDsa87, SkInner::P87(k)) => {
-                sign_impl::<MlDsa87>(py, k, msg.as_slice(), ctx.as_slice(), deterministic)
+                sign_impl::<MlDsa87>(py, k, msg, ctx, deterministic)
             }
             _ => {
                 return Err(PyValueError::new_err(
@@ -259,32 +261,20 @@ impl MlDsa {
         }
     }
 
+    #[pyo3(signature = (vk, sig, msg, ctx = None))]
     fn verify(
         &self,
         vk: &PyVerificationKey,
-        msg: Vec<u8>,
-        ctx: Vec<u8>,
-        sig: Vec<u8>,
+        sig: &[u8],
+        msg: &[u8],
+        ctx: Option<&[u8]>,
     ) -> PyResult<bool> {
+        let ctx = ctx.unwrap_or(&[]);
+
         match (self.params, &vk.inner) {
-            (ParameterSet::MlDsa44, VkInner::P44(k)) => Ok(MlDsa44::verify(
-                k,
-                msg.as_slice(),
-                ctx.as_slice(),
-                sig.as_slice(),
-            )),
-            (ParameterSet::MlDsa65, VkInner::P65(k)) => Ok(MlDsa65::verify(
-                k,
-                msg.as_slice(),
-                ctx.as_slice(),
-                sig.as_slice(),
-            )),
-            (ParameterSet::MlDsa87, VkInner::P87(k)) => Ok(MlDsa87::verify(
-                k,
-                msg.as_slice(),
-                ctx.as_slice(),
-                sig.as_slice(),
-            )),
+            (ParameterSet::MlDsa44, VkInner::P44(k)) => Ok(MlDsa44::verify(k, msg, ctx, sig)),
+            (ParameterSet::MlDsa65, VkInner::P65(k)) => Ok(MlDsa65::verify(k, msg, ctx, sig)),
+            (ParameterSet::MlDsa87, VkInner::P87(k)) => Ok(MlDsa87::verify(k, msg, ctx, sig)),
             _ => {
                 return Err(PyValueError::new_err(
                     "Key does not match this ML_DSA parameter set",
