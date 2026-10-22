@@ -32,7 +32,7 @@ impl<const K: usize, const L: usize> SigningKey<K, L> {
         }
     }
 
-    pub(crate) fn from_bytes(bytes: &[u8], eta: usize) -> Result<Self, String> {
+    pub(crate) fn from_bytes(bytes: &[u8], eta: usize) -> Result<Self, &'static str> {
         const D: usize = 13;
         let eta_bits = if eta == 2 { 3 } else { 4 };
         let s_size = eta_bits << 5;
@@ -44,7 +44,7 @@ impl<const K: usize, const L: usize> SigningKey<K, L> {
         let (s2_bytes, rest) = rest.split_at(K * s_size);
 
         if rest.len() != (K << 5) * D {
-            return Err(String::from("Invalid length for byte encoding."));
+            return Err("Invalid length for byte encoding.");
         }
 
         let rho: [u8; 32] = rho.try_into().unwrap();

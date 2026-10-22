@@ -1,4 +1,4 @@
-use std::array::from_fn;
+use core::array::from_fn;
 
 use crate::polynomial::Polynomial;
 use crate::vector::Vector;

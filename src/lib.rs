@@ -117,9 +117,9 @@ impl PyVerificationKey {
                         .map_err(|e| PyValueError::new_err(e))?,
                 ),
             }),
-            n => Err(PyValueError::new_err(format!(
-                "Invalid verification key length {n}; expected 1312, 1952, or 2592"
-            ))),
+            _ => Err(PyValueError::new_err(
+                "Invalid verification key length; expected 1312, 1952, or 2592",
+            )),
         }
     }
 }
@@ -171,9 +171,9 @@ impl PySigningKey {
                         .map_err(|e| PyValueError::new_err(e))?,
                 ),
             }),
-            n => Err(PyValueError::new_err(format!(
-                "Invalid signing key length {n}; expected 2560, 4032, or 4896"
-            ))),
+            _ => Err(PyValueError::new_err(
+                "Invalid signing key length; expected 2560, 4032, or 4896",
+            )),
         }
     }
 }

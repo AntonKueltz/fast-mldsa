@@ -40,9 +40,9 @@ impl<const K: usize, const L: usize> VerificationKey<K, L> {
         }
     }
 
-    pub(crate) fn from_bytes(bytes: &[u8]) -> Result<Self, String> {
+    pub(crate) fn from_bytes(bytes: &[u8]) -> Result<Self, &'static str> {
         if bytes.len() != 32 + K * 320 {
-            return Err(String::from("Invalid length for byte encoding."));
+            return Err("Invalid length for byte encoding.");
         }
 
         let (rho, t1_bytes) = bytes.split_at(32);

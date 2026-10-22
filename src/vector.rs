@@ -1,4 +1,4 @@
-use std::array::from_fn;
+use core::array::from_fn;
 
 use crate::hash::h;
 use crate::polynomial::Polynomial;
@@ -31,7 +31,7 @@ impl<const N: usize> Vector<N> {
         r
     }
 
-    pub(crate) fn from_bytes_eta(bytes: &[u8], eta_bits: usize) -> Result<Self, String> {
+    pub(crate) fn from_bytes_eta(bytes: &[u8], eta_bits: usize) -> Result<Self, &'static str> {
         let sz = eta_bits << 5;
         debug_assert_eq!(bytes.len(), N * sz);
 

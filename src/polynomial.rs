@@ -153,7 +153,7 @@ impl Polynomial {
         }
     }
 
-    pub(crate) fn from_bytes_eta(bytes: &[u8], eta_bits: usize) -> Result<Self, String> {
+    pub(crate) fn from_bytes_eta(bytes: &[u8], eta_bits: usize) -> Result<Self, &'static str> {
         debug_assert_eq!(bytes.len(), eta_bits << 5);
 
         match eta_bits {
@@ -448,7 +448,7 @@ impl Polynomial {
         r
     }
 
-    fn from_bytes_4(b: &[u8]) -> Result<Self, String> {
+    fn from_bytes_4(b: &[u8]) -> Result<Self, &'static str> {
         let mut r = Self::new();
         let mut bi = 0;
         const ETA: i32 = 4;
@@ -461,7 +461,7 @@ impl Polynomial {
             let r1 = (b0 >> 4) as i32;
 
             if r0 > 8 || r1 > 8 {
-                return Err(String::from("Parsed value for ETA outside of valid range"));
+                return Err("Parsed value for ETA outside of valid range");
             }
 
             r.coeffs[i] = ETA - r0;
@@ -471,7 +471,7 @@ impl Polynomial {
         Ok(r)
     }
 
-    fn from_bytes_3(b: &[u8]) -> Result<Self, String> {
+    fn from_bytes_3(b: &[u8]) -> Result<Self, &'static str> {
         let mut r = Self::new();
         let mut bi = 0;
         const ETA: i32 = 2;
@@ -492,7 +492,7 @@ impl Polynomial {
             let r7 = ((b2 >> 5) & 0x7) as i32;
 
             if r0 > 4 || r1 > 4 || r2 > 4 || r3 > 4 || r4 > 4 || r5 > 4 || r6 > 4 || r7 > 4 {
-                return Err(String::from("Parsed value for ETA outside of valid range"));
+                return Err("Parsed value for ETA outside of valid range");
             }
 
             r.coeffs[i] = ETA - r0;
