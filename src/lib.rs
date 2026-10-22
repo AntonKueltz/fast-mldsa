@@ -7,7 +7,7 @@ use crate::verification_key::VerificationKey;
 
 pub mod dsa;
 mod hash;
-mod integer_field;
+mod integer;
 mod matrix;
 mod polynomial;
 mod signer;

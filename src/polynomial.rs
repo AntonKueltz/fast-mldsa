@@ -1,6 +1,8 @@
 use shake::{ExtendableOutput, Shake128, Shake256, Update, XofReader};
 
-use crate::integer_field::{cond_add_q, mont_q, reduce_q};
+use crate::integer::{
+    cond_add_q, decompose, infinity_norm, mont_q, pow2_round, reduce_q, use_hint,
+};
 
 pub(crate) const N: usize = 256;
 const Q: i32 = 8380417;
@@ -234,11 +236,7 @@ impl Polynomial {
         }
 
         for i in 0..N {
-            let x = self.coeffs[i];
-            let mut t = x >> 31;
-            t = x - (t & (x << 1));
-
-            if t >= limit {
+            if infinity_norm(self.coeffs[i]) >= limit {
                 return false;
             }
         }
@@ -279,11 +277,9 @@ impl Polynomial {
 
     pub(crate) fn pow2_round(&self, hi: &mut Self, lo: &mut Self) {
         for i in 0..N {
-            let a = self.coeffs[i];
-            let a_hi = (a + 0xfff) >> 13;
-
+            let (a_hi, a_lo) = pow2_round(self.coeffs[i]);
             hi.coeffs[i] = a_hi;
-            lo.coeffs[i] = a - (a_hi << 13);
+            lo.coeffs[i] = a_lo;
         }
     }
 
@@ -638,53 +634,6 @@ impl Polynomial {
             buf[bi + 2] = ((w5 >> 1) as u8) | ((w6 << 2) as u8) | ((w7 << 5) as u8);
             bi += 3;
         }
-    }
-}
-
-#[inline]
-pub(crate) fn decompose(a: i32, gamma: usize) -> (i32, i32) {
-    const BIT_21: i32 = 1 << 21;
-    const BIT_23: i32 = 1 << 23;
-
-    let mut a_hi = (a + 127) >> 7;
-
-    if gamma == 261888 {
-        a_hi = ((a_hi * 1025 + BIT_21) >> 22) & 0xf;
-    } else if gamma == 95232 {
-        a_hi = (a_hi * 11275 + BIT_23) >> 24;
-        a_hi ^= ((43 - a_hi) >> 31) & a_hi;
-    } else {
-        unreachable!()
-    }
-
-    let mut a_lo = a - a_hi * (gamma << 1) as i32;
-    a_lo -= ((((Q as i32 - 1) >> 1) - a_lo) >> 31) & Q as i32;
-
-    (a_hi, a_lo)
-}
-
-#[inline]
-pub(crate) fn use_hint(a: i32, hint: i32, gamma: usize) -> i32 {
-    let (a1, a0) = decompose(a, gamma);
-
-    if hint == 0 {
-        return a1;
-    }
-
-    if gamma == 261888 {
-        if a0 > 0 {
-            (a1 + 1) & 0xf
-        } else {
-            (a1 - 1) & 0xf
-        }
-    } else if gamma == 95232 {
-        if a0 > 0 {
-            if a1 == 43 { 0 } else { a1 + 1 }
-        } else {
-            if a1 == 0 { 43 } else { a1 - 1 }
-        }
-    } else {
-        unreachable!()
     }
 }
 
