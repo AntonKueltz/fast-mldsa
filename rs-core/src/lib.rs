@@ -13,6 +13,7 @@ pub mod verification_key;
 #[cfg(feature = "ct-testing")]
 pub mod ct {
     pub use crate::integer::ct_exports as integer;
+    pub use crate::matrix::ct_exports as matrix;
     pub use crate::polynomial::ct_exports as poly;
     pub use crate::vector::ct_exports as vector;
 }

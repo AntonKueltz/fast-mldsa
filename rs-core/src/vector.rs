@@ -225,7 +225,7 @@ pub mod ct_exports {
     use crate::polynomial::ct_exports::Poly;
 
     #[derive(Clone)]
-    pub struct V<const N: usize>(Vector<N>);
+    pub struct V<const N: usize>(pub(crate) Vector<N>);
 
     impl<const N: usize> V<N> {
         pub fn from_polys(polys: [Poly; N]) -> Self {
@@ -257,6 +257,10 @@ pub mod ct_exports {
         #[inline(never)]
         pub fn norm_within_limit(&self, limit: i32) -> bool {
             self.0.norm_within_limit(limit)
+        }
+        #[inline(never)]
+        pub fn cond_add(&mut self) {
+            self.0.cond_add()
         }
     }
 

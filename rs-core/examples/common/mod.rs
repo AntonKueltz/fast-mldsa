@@ -1,8 +1,12 @@
 #![allow(dead_code)]
 
+use core::array::from_fn;
+
 use dudect_bencher::rand::{Rng, RngExt};
 use dudect_bencher::{BenchRng, Class, CtRunner};
+
 use ml_dsa::ct::poly::{N, Poly};
+use ml_dsa::ct::vector::V;
 
 pub const SAMPLES: usize = 5_000;
 
@@ -36,6 +40,29 @@ pub fn raw_bytes(r: &mut BenchRng, len: usize) -> Vec<u8> {
     let mut b = vec![0u8; len];
     r.fill_bytes(&mut b);
     b
+}
+
+pub fn vec_const<const D: usize>(c: i32) -> V<D> {
+    V::from_polys(from_fn(|_| Poly::from_coeffs([c; N])))
+}
+
+pub fn vec_random<const D: usize>(r: &mut BenchRng, lo: i32, hi: i32) -> V<D> {
+    V::from_polys(from_fn(|_| poly_random(r, lo, hi)))
+}
+
+pub fn vec_edges<const D: usize>(
+    rng: &mut BenchRng,
+    consts: &[i32],
+    lo: i32,
+    hi: i32,
+) -> Vec<V<D>> {
+    let mut v: Vec<V<D>> = consts.iter().map(|&c| vec_const::<D>(c)).collect();
+    v.push(vec_random::<D>(rng, lo, hi));
+    v
+}
+
+pub fn pick_v<const D: usize>(edges: &[V<D>], r: &mut BenchRng) -> V<D> {
+    edges[r.random_range(0..edges.len())].clone()
 }
 
 pub fn run_state_n<S>(

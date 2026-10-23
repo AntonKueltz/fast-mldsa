@@ -39,3 +39,22 @@ impl<const K: usize, const L: usize> Matrix<K, L> {
         w
     }
 }
+
+#[cfg(feature = "ct-testing")]
+pub mod ct_exports {
+    use super::Matrix;
+    use crate::vector::ct_exports::V;
+
+    pub struct Mat<const K: usize, const L: usize>(Matrix<K, L>);
+
+    impl<const K: usize, const L: usize> Mat<K, L> {
+        pub fn expand_a(rho: &[u8; 32]) -> Self {
+            Self(Matrix::expand_a(rho))
+        }
+
+        #[inline(never)]
+        pub fn mul_vec(&self, y: &V<L>) -> V<K> {
+            V(self.0.mul_vec(&y.0))
+        }
+    }
+}

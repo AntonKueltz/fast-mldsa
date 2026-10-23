@@ -16,25 +16,6 @@ const M: i32 = (Q - 1) / 2;
 const LIMIT: i32 = (1 << 19) - 196;
 const ETA: i32 = 4;
 
-// ---------- vector generators ----------
-fn vec_const<const D: usize>(c: i32) -> V<D> {
-    V::from_polys(from_fn(|_| Poly::from_coeffs([c; N])))
-}
-
-fn vec_random<const D: usize>(r: &mut BenchRng, lo: i32, hi: i32) -> V<D> {
-    V::from_polys(from_fn(|_| poly_random(r, lo, hi)))
-}
-
-fn vec_edges<const D: usize>(rng: &mut BenchRng, consts: &[i32], lo: i32, hi: i32) -> Vec<V<D>> {
-    let mut v: Vec<V<D>> = consts.iter().map(|&c| vec_const::<D>(c)).collect();
-    v.push(vec_random::<D>(rng, lo, hi));
-    v
-}
-
-fn pick_v<const D: usize>(edges: &[V<D>], r: &mut BenchRng) -> V<D> {
-    edges[r.random_range(0..edges.len())].clone()
-}
-
 // ---------- expand_mask: secret rho'' -> SHAKE256 -> unpack ----------
 fn random_rho(r: &mut BenchRng) -> [u8; 64] {
     let mut b = [0u8; 64];

@@ -34,3 +34,7 @@ required-features = ["ct-testing"]
 [[example]]
 name = "ct_vec"
 required-features = ["ct-testing"]
+
+[[example]]
+name = "ct_matrix"
+required-features = ["ct-testing"]
