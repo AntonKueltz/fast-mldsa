@@ -10,7 +10,7 @@ crate-type = ["rlib"]
 [dependencies]
 getrandom = "0.4.3"
 shake = "0.1.0"
-zeroize = "1.9.1"
+zeroize = { version = "1.9.1", features = ["derive"] }
 
 [dev-dependencies]
 criterion = "0.8.2"

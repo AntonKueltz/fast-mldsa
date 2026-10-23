@@ -1,13 +1,18 @@
+use zeroize::{Zeroize, ZeroizeOnDrop};
+
 use crate::matrix::Matrix;
 use crate::vector::Vector;
 
+#[derive(Zeroize, ZeroizeOnDrop)]
 pub struct SigningKey<const K: usize, const L: usize> {
+    #[zeroize(skip)]
     rho: [u8; 32],
     k: [u8; 32],
     tr: [u8; 64],
     s1: Vector<L>,
     s2: Vector<K>,
     t0: Vector<K>,
+    #[zeroize(skip)]
     a: Matrix<K, L>,
 }
 

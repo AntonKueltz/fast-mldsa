@@ -1,4 +1,5 @@
 use shake::{ExtendableOutput, Shake128, Shake256, Update, XofReader};
+use zeroize::Zeroize;
 
 use crate::integer::{
     cond_add_q, decompose, infinity_norm, mont_q, pow2_round, reduce_q, use_hint,
@@ -36,7 +37,7 @@ const ZETAS: [i32; N] = [
     -1362209, 3937738, 1400424, -846154, 1976782,
 ];
 
-#[derive(Clone)]
+#[derive(Clone, Zeroize)]
 pub(crate) struct Polynomial {
     pub(crate) coeffs: [i32; N],
 }

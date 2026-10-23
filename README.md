@@ -102,6 +102,7 @@ uv run pytest  # tests the python code (generally external interfaces)
 There are also slower tests for the higher iteration
 [accumulated tests](https://github.com/C2SP/CCTV/tree/main/ML-DSA/accumulated) that
 are skipped by default. The 60,000,000 iteration tests take a very long time to run.
+On an i9-9900k the below command takes about 14h30m.
 
 ```bash
 uv run pytest -m slow

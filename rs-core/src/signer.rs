@@ -1,10 +1,14 @@
+use zeroize::{Zeroize, ZeroizeOnDrop};
+
 use crate::dsa::Dsa;
 use crate::hash::h;
 use crate::polynomial::{N, Polynomial};
 use crate::signing_key::SigningKey;
 use crate::vector::Vector;
 
+#[derive(Zeroize, ZeroizeOnDrop)]
 pub(crate) struct Signer<'a, const K: usize, const L: usize> {
+    #[zeroize(skip)]
     sk: &'a SigningKey<K, L>,
     s1_hat: Vector<L>,
     s2_hat: Vector<K>,

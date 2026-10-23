@@ -1,9 +1,11 @@
 use core::array::from_fn;
 
+use zeroize::Zeroize;
+
 use crate::hash::h;
 use crate::polynomial::Polynomial;
 
-#[derive(Clone)]
+#[derive(Clone, Zeroize)]
 pub(crate) struct Vector<const N: usize> {
     pub(crate) entries: [Polynomial; N],
 }
