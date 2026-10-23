@@ -32,7 +32,7 @@ impl<const K: usize, const L: usize> SigningKey<K, L> {
         }
     }
 
-    pub(crate) fn from_bytes(bytes: &[u8], eta: usize) -> Result<Self, &'static str> {
+    pub fn from_bytes(bytes: &[u8], eta: usize) -> Result<Self, &'static str> {
         const D: usize = 13;
         let eta_bits = if eta == 2 { 3 } else { 4 };
         let s_size = eta_bits << 5;
@@ -66,7 +66,7 @@ impl<const K: usize, const L: usize> SigningKey<K, L> {
         })
     }
 
-    pub(crate) fn to_bytes(&self, buf: &mut [u8], eta_d: usize) {
+    pub fn to_bytes(&self, buf: &mut [u8], eta_d: usize) {
         buf[..32].copy_from_slice(self.rho.as_slice());
         buf[32..64].copy_from_slice(self.k.as_slice());
         buf[64..128].copy_from_slice(self.tr.as_slice());

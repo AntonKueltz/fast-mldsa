@@ -457,9 +457,16 @@ dependencies = [
  "criterion",
  "dudect-bencher",
  "getrandom",
- "pyo3",
  "shake",
  "zeroize",
+]
+
+[[package]]
+name = "ml-dsa-py"
+version = "0.1.0"
+dependencies = [
+ "ml-dsa",
+ "pyo3",
 ]
 
 [[package]]

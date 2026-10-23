@@ -121,15 +121,15 @@ ops=['keygen', 'sign', 'verify'] duration=1.0s repeats=5 warmup=0.5s
 
 op             param set      ops/sec (med)     µs/op           min           max       stdev
 ---------------------------------------------------------------------------------------------
-keygen         ML_DSA_44             12,913      77.4        12,846        13,111         125
-sign           ML_DSA_44              5,119     195.3         4,823         5,217         177
-verify         ML_DSA_44             29,168      34.3        28,942        29,332         156
-keygen         ML_DSA_65              7,134     140.2         7,015         7,246          82
-sign           ML_DSA_65              3,234     309.2         3,105         3,308          76
-verify         ML_DSA_65             21,574      46.4        21,117        21,640         220
-keygen         ML_DSA_87              4,778     209.3         4,757         4,820          25
-sign           ML_DSA_87              2,929     341.4         2,821         2,950          66
-verify         ML_DSA_87             15,940      62.7        15,674        15,977         132
+keygen         ML_DSA_44             13,159      76.0        12,843        13,290         169
+sign           ML_DSA_44              5,681     176.0         5,469         5,769         133
+verify         ML_DSA_44             29,979      33.4        29,510        30,192         270
+keygen         ML_DSA_65              7,393     135.3         7,266         7,444          66
+sign           ML_DSA_65              3,430     291.5         3,384         3,906         217
+verify         ML_DSA_65             21,905      45.7        21,437        22,073         251
+keygen         ML_DSA_87              4,873     205.2         4,522         4,877         153
+sign           ML_DSA_87              3,082     324.4         3,001         3,253          97
+verify         ML_DSA_87             16,051      62.3        15,698        16,116         182
 ```
 
 Depending on your specific CPU architecture, you may be able to see significant performance
@@ -142,15 +142,15 @@ ops=['keygen', 'sign', 'verify'] duration=1.0s repeats=5 warmup=0.5s
 
 op             param set      ops/sec (med)     µs/op           min           max       stdev
 ---------------------------------------------------------------------------------------------
-keygen         ML_DSA_44             16,177      61.8        16,065        16,377         135
-sign           ML_DSA_44              9,834     101.7         9,576         9,917         141
-verify         ML_DSA_44             52,846      18.9        52,105        52,899         333
-keygen         ML_DSA_65              8,838     113.1         8,764         8,905          54
-sign           ML_DSA_65              6,727     148.7         6,473         6,899         162
-verify         ML_DSA_65             42,286      23.6        42,168        42,561         166
-keygen         ML_DSA_87              5,928     168.7         5,808         5,977          76
-sign           ML_DSA_87              5,963     167.7         5,674         6,178         206
-verify         ML_DSA_87             31,839      31.4        31,242        32,059         343
+keygen         ML_DSA_44             16,673      60.0        16,362        16,876         191
+sign           ML_DSA_44              9,975     100.2         9,821        10,227         178
+verify         ML_DSA_44             49,534      20.2        46,771        49,668       1,236
+keygen         ML_DSA_65              9,134     109.5         9,115         9,205          44
+sign           ML_DSA_65              7,014     142.6         6,896         7,176         116
+verify         ML_DSA_65             38,854      25.7        38,666        39,045         147
+keygen         ML_DSA_87              6,114     163.5         6,087         6,150          27
+sign           ML_DSA_87              6,325     158.1         6,291         6,560         131
+verify         ML_DSA_87             29,069      34.4        28,944        29,530         241
 ```
 
 ## Rust Benchmarking

@@ -29,7 +29,7 @@ impl<const K: usize, const L: usize> VerificationKey<K, L> {
         out
     }
 
-    pub(crate) fn to_bytes(&self, buf: &mut [u8]) {
+    pub fn to_bytes(&self, buf: &mut [u8]) {
         buf[..32].copy_from_slice(self.rho.as_slice());
 
         let (mut start, mut end) = (32, 352);
@@ -40,7 +40,7 @@ impl<const K: usize, const L: usize> VerificationKey<K, L> {
         }
     }
 
-    pub(crate) fn from_bytes(bytes: &[u8]) -> Result<Self, &'static str> {
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self, &'static str> {
         if bytes.len() != 32 + K * 320 {
             return Err("Invalid length for byte encoding.");
         }

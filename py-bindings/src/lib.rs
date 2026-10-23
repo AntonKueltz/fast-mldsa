@@ -1,19 +1,9 @@
 use pyo3::exceptions::PyValueError;
 use pyo3::{prelude::*, types::PyBytes};
 
-use crate::dsa::{Dsa, MlDsa44, MlDsa65, MlDsa87};
-use crate::signing_key::SigningKey;
-use crate::verification_key::VerificationKey;
-
-pub mod dsa;
-mod hash;
-mod integer;
-mod matrix;
-mod polynomial;
-mod signer;
-mod signing_key;
-mod vector;
-mod verification_key;
+use ml_dsa::dsa::{Dsa, MlDsa44, MlDsa65, MlDsa87};
+use ml_dsa::signing_key::SigningKey;
+use ml_dsa::verification_key::VerificationKey;
 
 #[pyclass(from_py_object)]
 #[derive(PartialEq, Clone, Copy)]
@@ -291,11 +281,4 @@ fn rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PySigningKey>()?;
     m.add_class::<MlDsa>()?;
     Ok(())
-}
-
-#[cfg(feature = "ct-testing")]
-pub mod ct {
-    pub use crate::integer::ct_exports as integer;
-    pub use crate::polynomial::ct_exports as poly;
-    pub use crate::vector::ct_exports as vector;
 }

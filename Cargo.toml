@@ -1,44 +1,10 @@
-[package]
-name = "ml-dsa"
-version = "0.1.0"
-edition = "2024"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-[lib]
-name = "ml_dsa"
-crate-type = ["cdylib", "rlib"]
-
-[dependencies]
-getrandom = "0.4.3"
-pyo3 = "0.29.0"
-shake = "0.1.0"
-zeroize = "1.9.1"
-
-[dev-dependencies]
-criterion = "0.8.2"
-dudect-bencher = "0.7.0"
-
-[features]
-ct-testing = []
-
-[[bench]]
-name = "dsa"
-harness = false
+[workspace]
+resolver = "2"
+members = ["rs-core", "py-bindings"]
+default-members = ["rs-core", "py-bindings"]
 
 [profile.bench]
 debug = true
-
-[[example]]
-name = "ct_integer"
-required-features = ["ct-testing"]
-
-[[example]]
-name = "ct_poly"
-required-features = ["ct-testing"]
-
-[[example]]
-name = "ct_vec"
-required-features = ["ct-testing"]
 
 [profile.ct]
 inherits = "release"

@@ -1,0 +1,12 @@
+[package]
+name = "ml-dsa-py"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "ml_dsa_py"
+crate-type = ["cdylib"]
+
+[dependencies]
+ml-dsa = { path = "../rs-core" }
+pyo3 = { version = "0.29.0", features = ["extension-module"] }

@@ -1,0 +1,36 @@
+[package]
+name = "ml-dsa"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "ml_dsa"
+crate-type = ["rlib"]
+
+[dependencies]
+getrandom = "0.4.3"
+shake = "0.1.0"
+zeroize = "1.9.1"
+
+[dev-dependencies]
+criterion = "0.8.2"
+dudect-bencher = "0.7.0"
+
+[features]
+ct-testing = []
+
+[[bench]]
+name = "dsa"
+harness = false
+
+[[example]]
+name = "ct_integer"
+required-features = ["ct-testing"]
+
+[[example]]
+name = "ct_poly"
+required-features = ["ct-testing"]
+
+[[example]]
+name = "ct_vec"
+required-features = ["ct-testing"]
