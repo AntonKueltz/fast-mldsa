@@ -292,3 +292,10 @@ fn rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<MlDsa>()?;
     Ok(())
 }
+
+#[cfg(feature = "ct-testing")]
+pub mod ct {
+    pub use crate::integer::ct_exports as integer;
+    pub use crate::polynomial::ct_exports as poly;
+    pub use crate::vector::ct_exports as vector;
+}

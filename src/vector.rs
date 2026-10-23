@@ -218,3 +218,55 @@ pub(crate) fn expand_s<const K: usize, const L: usize>(
 
     (s1, s2)
 }
+
+#[cfg(feature = "ct-testing")]
+pub mod ct_exports {
+    use super::Vector;
+    use crate::polynomial::ct_exports::Poly;
+
+    #[derive(Clone)]
+    pub struct V<const N: usize>(Vector<N>);
+
+    impl<const N: usize> V<N> {
+        pub fn from_polys(polys: [Poly; N]) -> Self {
+            Self(Vector {
+                entries: polys.map(|p| p.0),
+            })
+        }
+
+        #[inline(never)]
+        pub fn ntt(&mut self) {
+            self.0.ntt()
+        }
+        #[inline(never)]
+        pub fn inv_ntt(&mut self) {
+            self.0.inv_ntt()
+        }
+        #[inline(never)]
+        pub fn reduce(&mut self) {
+            self.0.reduce()
+        }
+        #[inline(never)]
+        pub fn add_acc(&mut self, other: &Self) {
+            self.0.add_acc(&other.0)
+        }
+        #[inline(never)]
+        pub fn mul_poly(&self, c: &Poly) -> Self {
+            Self(self.0.mul_poly(&c.0))
+        }
+        #[inline(never)]
+        pub fn norm_within_limit(&self, limit: i32) -> bool {
+            self.0.norm_within_limit(limit)
+        }
+    }
+
+    #[inline(never)]
+    pub fn expand_mask<const N: usize>(
+        rho: &[u8; 64],
+        mu: usize,
+        gamma: usize,
+        v_size: usize,
+    ) -> V<N> {
+        V(Vector::<N>::expand_mask(rho, mu, gamma, v_size))
+    }
+}

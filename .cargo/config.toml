@@ -1,0 +1,4 @@
+[alias]
+ct-integer = "run --profile ct --features ct-testing --example ct_integer --"
+ct-poly = "run --profile ct --features ct-testing --example ct_poly --"
+ct-vec = "run --profile ct --features ct-testing --example ct_vec --"

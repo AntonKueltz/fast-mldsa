@@ -79,3 +79,39 @@ pub(crate) fn use_hint(a: i32, hint: i32, gamma: usize) -> i32 {
 #[cfg(test)]
 #[path = "unit_tests/integer_test.rs"]
 mod integer_test;
+
+#[cfg(feature = "ct-testing")]
+pub mod ct_exports {
+    pub const Q: i32 = super::Q as i32;
+    pub const GAMMA2_32: usize = super::GAMMA2_32;
+    pub const GAMMA2_88: usize = super::GAMMA2_88;
+
+    #[inline(never)]
+    pub fn mont_q(n: i64) -> i32 {
+        super::mont_q(n)
+    }
+    #[inline(never)]
+    pub fn reduce_q(n: i32) -> i32 {
+        super::reduce_q(n)
+    }
+    #[inline(never)]
+    pub fn cond_add_q(n: i32) -> i32 {
+        super::cond_add_q(n)
+    }
+    #[inline(never)]
+    pub fn infinity_norm(n: i32) -> i32 {
+        super::infinity_norm(n)
+    }
+    #[inline(never)]
+    pub fn pow2_round(n: i32) -> (i32, i32) {
+        super::pow2_round(n)
+    }
+    #[inline(never)]
+    pub fn decompose(a: i32, gamma: usize) -> (i32, i32) {
+        super::decompose(a, gamma)
+    }
+    #[inline(never)]
+    pub fn use_hint(a: i32, hint: i32, gamma: usize) -> i32 {
+        super::use_hint(a, hint, gamma)
+    }
+}

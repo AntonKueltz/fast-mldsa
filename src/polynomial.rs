@@ -249,7 +249,7 @@ impl Polynomial {
 
         for i in 0..N {
             let (a0, a1) = (lo.coeffs[i], hi.coeffs[i]);
-            let hint = (a0 > gamma || a0 < -gamma || (a0 == -gamma && a1 != 0)) as i32;
+            let hint = ((a0 > gamma) | (a0 < -gamma) | ((a0 == -gamma) & (a1 != 0))) as i32;
             self.coeffs[i] = hint;
             ones += hint as usize;
         }
@@ -640,3 +640,71 @@ impl Polynomial {
 #[cfg(test)]
 #[path = "unit_tests/polynomial_test.rs"]
 mod polynomial_test;
+
+#[cfg(feature = "ct-testing")]
+pub mod ct_exports {
+    use super::Polynomial;
+
+    pub const N: usize = super::N;
+    pub const Q: i32 = super::Q;
+
+    #[derive(Clone)]
+    pub struct Poly(pub(crate) Polynomial);
+
+    impl Poly {
+        pub fn from_coeffs(coeffs: [i32; N]) -> Self {
+            Self(Polynomial { coeffs })
+        }
+
+        #[inline(never)]
+        pub fn ntt(&mut self) {
+            self.0.ntt()
+        }
+        #[inline(never)]
+        pub fn inv_ntt(&mut self) {
+            self.0.inv_ntt()
+        }
+        #[inline(never)]
+        pub fn reduce(&mut self) {
+            self.0.reduce()
+        }
+        #[inline(never)]
+        pub fn cond_add(&mut self) {
+            self.0.cond_add()
+        }
+        #[inline(never)]
+        pub fn mul_acc(&mut self, l: &Self, r: &Self) {
+            self.0.mul_acc(&l.0, &r.0)
+        }
+        #[inline(never)]
+        pub fn pow2_round(&self, hi: &mut Self, lo: &mut Self) {
+            self.0.pow2_round(&mut hi.0, &mut lo.0)
+        }
+        #[inline(never)]
+        pub fn decompose(&self, hi: &mut Self, lo: &mut Self, gamma: usize) {
+            self.0.decompose(&mut hi.0, &mut lo.0, gamma)
+        }
+        #[inline(never)]
+        pub fn make_hint(&mut self, lo: &Self, hi: &Self, gamma: i32) -> usize {
+            self.0.make_hint(&lo.0, &hi.0, gamma)
+        }
+        #[inline(never)]
+        pub fn norm_within_limit(&self, limit: i32) -> bool {
+            self.0.norm_within_limit(limit)
+        }
+        #[inline(never)]
+        pub fn to_bytes(&self, buf: &mut [u8], d: usize) {
+            self.0.to_bytes(buf, d)
+        }
+    }
+
+    #[inline(never)]
+    pub fn from_bytes(bytes: &[u8], d: usize) -> Poly {
+        Poly(Polynomial::from_bytes(bytes, d))
+    }
+
+    #[inline(never)]
+    pub fn from_bytes_eta(bytes: &[u8], eta_bits: usize) -> Result<Poly, &'static str> {
+        Polynomial::from_bytes_eta(bytes, eta_bits).map(Poly)
+    }
+}
