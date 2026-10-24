@@ -1,4 +1,4 @@
-use zeroize::{Zeroize, ZeroizeOnDrop};
+use zeroize::{Zeroize, ZeroizeOnDrop, Zeroizing};
 
 use crate::dsa::Dsa;
 use crate::hash::h;
@@ -14,7 +14,7 @@ pub(crate) struct Signer<'a, const K: usize, const L: usize> {
     s2_hat: Vector<K>,
     t0_hat: Vector<K>,
     mu: [u8; 64],
-    rho: [u8; 64],
+    rho_prime: [u8; 64],
 }
 
 impl<'a, const K: usize, const L: usize> Signer<'a, K, L> {
@@ -34,9 +34,9 @@ impl<'a, const K: usize, const L: usize> Signer<'a, K, L> {
             &[sk.tr().as_slice(), &[0u8], &[ctx.len() as u8], ctx, msg],
         );
 
-        let mut rho = [0u8; 64];
+        let mut rho_prime = [0u8; 64];
         h(
-            &mut rho,
+            &mut rho_prime,
             &[sk.k().as_slice(), rnd.as_slice(), mu.as_slice()],
         );
 
@@ -46,7 +46,7 @@ impl<'a, const K: usize, const L: usize> Signer<'a, K, L> {
             s2_hat,
             t0_hat,
             mu,
-            rho,
+            rho_prime,
         }
     }
 
@@ -54,16 +54,22 @@ impl<'a, const K: usize, const L: usize> Signer<'a, K, L> {
         let mut kappa = 0;
 
         loop {
-            let y = Vector::<L>::expand_mask(&self.rho, kappa, P::GAMMA1, P::V_SZ);
+            let y = Zeroizing::new(Vector::<L>::expand_mask(
+                &self.rho_prime,
+                kappa,
+                P::GAMMA1,
+                P::V_SZ,
+            ));
             kappa += L;
             let mut y_hat = y.clone();
             y_hat.ntt();
 
-            let mut w = self.sk.a().mul_vec(&y_hat);
+            let mut w = Zeroizing::new(self.sk.a().mul_vec(&y_hat));
             w.reduce();
             w.inv_ntt();
             w.cond_add();
-            let (w1, mut w0) = w.decompose(P::GAMMA2);
+            let (w1, w0) = w.decompose(P::GAMMA2);
+            let mut w0 = Zeroizing::new(w0);
 
             let mut c_buf = [0u8; 64];
             let chash = &mut c_buf[..P::C_SZ];
@@ -75,7 +81,7 @@ impl<'a, const K: usize, const L: usize> Signer<'a, K, L> {
             let mut c_hat = Polynomial::sample_ball(&chash, P::TAU);
             c_hat.ntt();
 
-            let mut z = self.s1_hat.mul_poly(&c_hat);
+            let mut z = Zeroizing::new(self.s1_hat.mul_poly(&c_hat));
             z.inv_ntt();
             z.add_acc(&y);
             z.reduce();
@@ -83,7 +89,7 @@ impl<'a, const K: usize, const L: usize> Signer<'a, K, L> {
                 continue;
             }
 
-            let mut cs2 = self.s2_hat.mul_poly(&c_hat);
+            let mut cs2 = Zeroizing::new(self.s2_hat.mul_poly(&c_hat));
             cs2.inv_ntt();
             w0.sub_acc(&cs2);
             w0.reduce();
@@ -91,21 +97,21 @@ impl<'a, const K: usize, const L: usize> Signer<'a, K, L> {
                 continue;
             }
 
-            let mut ct0 = self.t0_hat.mul_poly(&c_hat);
+            let mut ct0 = Zeroizing::new(self.t0_hat.mul_poly(&c_hat));
             ct0.inv_ntt();
             ct0.reduce();
             if !ct0.norm_within_limit(P::GAMMA2 as i32) {
                 continue;
             }
 
-            let mut h = cs2;
+            let mut hint = cs2;
             w0.add_acc(&ct0);
-            let n = h.make_hint(&w0, &w1, P::GAMMA2 as i32);
+            let n = hint.make_hint(&w0, &w1, P::GAMMA2 as i32);
             if n > P::OMEGA {
                 continue;
             }
 
-            Self::encode::<P>(&z, &h, chash, sig);
+            Self::encode::<P>(&z, &hint, chash, sig);
             break;
         }
     }

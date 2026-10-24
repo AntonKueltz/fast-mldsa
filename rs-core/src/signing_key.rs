@@ -8,6 +8,7 @@ pub struct SigningKey<const K: usize, const L: usize> {
     #[zeroize(skip)]
     rho: [u8; 32],
     k: [u8; 32],
+    #[zeroize(skip)]
     tr: [u8; 64],
     s1: Vector<L>,
     s2: Vector<K>,
@@ -42,41 +43,46 @@ impl<const K: usize, const L: usize> SigningKey<K, L> {
         let eta_bits = if eta == 2 { 3 } else { 4 };
         let s_size = eta_bits << 5;
 
+        if bytes.len() != 128 + (L + K) * s_size + (D << 5) * K {
+            return Err("Invalid length for byte encoding.");
+        }
+
         let (rho, rest) = bytes.split_at(32);
         let (k, rest) = rest.split_at(32);
         let (tr, rest) = rest.split_at(64);
         let (s1_bytes, rest) = rest.split_at(L * s_size);
-        let (s2_bytes, rest) = rest.split_at(K * s_size);
-
-        if rest.len() != (K << 5) * D {
-            return Err("Invalid length for byte encoding.");
-        }
+        let (s2_bytes, t0_bytes) = rest.split_at(K * s_size);
 
         let rho: [u8; 32] = rho.try_into().unwrap();
-        let k: [u8; 32] = k.try_into().unwrap();
         let tr: [u8; 64] = tr.try_into().unwrap();
-        let s1 = Vector::<L>::from_bytes_eta(s1_bytes, eta_bits)?;
-        let s2 = Vector::<K>::from_bytes_eta(s2_bytes, eta_bits)?;
-        let t0 = Vector::<K>::from_bytes(rest, D);
         let a = Matrix::<K, L>::expand_a(&rho);
 
-        Ok(Self {
+        let mut sk = Self {
             rho,
-            k,
+            k: [0u8; 32],
             tr,
-            s1,
-            s2,
-            t0,
+            s1: Vector::<L>::new(),
+            s2: Vector::<K>::new(),
+            t0: Vector::<K>::new(),
             a,
-        })
+        };
+
+        sk.k.copy_from_slice(k);
+        sk.s1 = Vector::<L>::from_bytes_eta(s1_bytes, eta_bits)?;
+        sk.s2 = Vector::<K>::from_bytes_eta(s2_bytes, eta_bits)?;
+        sk.t0 = Vector::<K>::from_bytes(t0_bytes, D);
+
+        Ok(sk)
     }
 
     pub fn to_bytes(&self, buf: &mut [u8], eta_d: usize) {
+        let inc: usize = eta_d << 5;
+        assert_eq!(buf.len(), 128 + (L + K) * inc + K * 416);
+
         buf[..32].copy_from_slice(self.rho.as_slice());
         buf[32..64].copy_from_slice(self.k.as_slice());
         buf[64..128].copy_from_slice(self.tr.as_slice());
 
-        let inc: usize = eta_d * 32;
         let mut start = 128;
         let mut end = start + inc;
 

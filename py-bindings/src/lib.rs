@@ -125,7 +125,7 @@ impl PySigningKey {
             }
             SkInner::P65(k) => {
                 let mut bytes = [0u8; 4032];
-                k.to_bytes(&mut bytes, 3);
+                k.to_bytes(&mut bytes, 4);
                 Ok(PyBytes::new(py, &bytes))
             }
             SkInner::P87(k) => {
