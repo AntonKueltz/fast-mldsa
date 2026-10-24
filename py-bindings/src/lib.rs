@@ -1,5 +1,5 @@
-use pyo3::exceptions::PyValueError;
-use pyo3::{prelude::*, types::PyBytes};
+use pyo3::{buffer::PyBuffer, exceptions::PyValueError, prelude::*, types::PyBytes};
+use zeroize::Zeroizing;
 
 use ml_dsa::dsa::{Dsa, MlDsa44, MlDsa65, MlDsa87};
 use ml_dsa::signing_key::SigningKey;
@@ -91,20 +91,17 @@ impl PyVerificationKey {
         match data.len() {
             1312 => Ok(Self {
                 inner: VkInner::P44(
-                    VerificationKey::<4, 4>::from_bytes(data)
-                        .map_err(|e| PyValueError::new_err(e))?,
+                    VerificationKey::<4, 4>::from_bytes(data).map_err(PyValueError::new_err)?,
                 ),
             }),
             1952 => Ok(Self {
                 inner: VkInner::P65(
-                    VerificationKey::<6, 5>::from_bytes(data)
-                        .map_err(|e| PyValueError::new_err(e))?,
+                    VerificationKey::<6, 5>::from_bytes(data).map_err(PyValueError::new_err)?,
                 ),
             }),
             2592 => Ok(Self {
                 inner: VkInner::P87(
-                    VerificationKey::<8, 7>::from_bytes(data)
-                        .map_err(|e| PyValueError::new_err(e))?,
+                    VerificationKey::<8, 7>::from_bytes(data).map_err(PyValueError::new_err)?,
                 ),
             }),
             _ => Err(PyValueError::new_err(
@@ -119,19 +116,19 @@ impl PySigningKey {
     fn to_bytes<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyBytes>> {
         match &self.inner {
             SkInner::P44(k) => {
-                let mut bytes = [0u8; 2560];
-                k.to_bytes(&mut bytes, 3);
-                Ok(PyBytes::new(py, &bytes))
+                let mut bytes = Zeroizing::new([0u8; 2560]);
+                k.to_bytes(&mut *bytes, 3);
+                Ok(PyBytes::new(py, &(*bytes)))
             }
             SkInner::P65(k) => {
-                let mut bytes = [0u8; 4032];
-                k.to_bytes(&mut bytes, 4);
-                Ok(PyBytes::new(py, &bytes))
+                let mut bytes = Zeroizing::new([0u8; 4032]);
+                k.to_bytes(&mut *bytes, 4);
+                Ok(PyBytes::new(py, &(*bytes)))
             }
             SkInner::P87(k) => {
-                let mut bytes = [0u8; 4896];
-                k.to_bytes(&mut bytes, 3);
-                Ok(PyBytes::new(py, &bytes))
+                let mut bytes = Zeroizing::new([0u8; 4896]);
+                k.to_bytes(&mut *bytes, 3);
+                Ok(PyBytes::new(py, &(*bytes)))
             }
         }
     }
@@ -141,30 +138,32 @@ impl PySigningKey {
     }
 
     #[staticmethod]
-    fn from_bytes(data: &[u8]) -> PyResult<Self> {
-        match data.len() {
-            2560 => Ok(Self {
-                inner: SkInner::P44(
-                    SigningKey::<4, 4>::from_bytes(data, 2)
-                        .map_err(|e| PyValueError::new_err(e))?,
-                ),
-            }),
-            4032 => Ok(Self {
-                inner: SkInner::P65(
-                    SigningKey::<6, 5>::from_bytes(data, 4)
-                        .map_err(|e| PyValueError::new_err(e))?,
-                ),
-            }),
-            4896 => Ok(Self {
-                inner: SkInner::P87(
-                    SigningKey::<8, 7>::from_bytes(data, 2)
-                        .map_err(|e| PyValueError::new_err(e))?,
-                ),
-            }),
-            _ => Err(PyValueError::new_err(
+    fn from_bytes(py: Python<'_>, data: PyBuffer<u8>) -> PyResult<Self> {
+        let len = data.len_bytes();
+        if !matches!(len, 2560 | 4032 | 4896) {
+            return Err(PyValueError::new_err(
                 "Invalid signing key length; expected 2560, 4032, or 4896",
-            )),
+            ));
         }
+
+        let mut buf = Zeroizing::new([0u8; 4896]);
+        data.copy_to_slice(py, &mut buf[..len])?;
+        let bytes = &buf[..len];
+
+        let inner = match len {
+            2560 => SkInner::P44(
+                SigningKey::<4, 4>::from_bytes(bytes, 2).map_err(PyValueError::new_err)?,
+            ),
+            4032 => SkInner::P65(
+                SigningKey::<6, 5>::from_bytes(bytes, 4).map_err(PyValueError::new_err)?,
+            ),
+            4896 => SkInner::P87(
+                SigningKey::<8, 7>::from_bytes(bytes, 2).map_err(PyValueError::new_err)?,
+            ),
+            _ => unreachable!(),
+        };
+
+        Ok(Self { inner })
     }
 }
 
@@ -179,11 +178,22 @@ impl MlDsa {
     }
 
     #[pyo3(signature = (seed = None))]
-    fn key_gen(&self, mut seed: Option<&[u8]>) -> PyResult<(PyVerificationKey, PySigningKey)> {
-        if seed.as_mut().is_some_and(|x| x.len() != 32) {
-            return Err(PyValueError::new_err("Seed must be exactly 32 bytes long"));
-        }
-        let seed_bytes: Option<&[u8; 32]> = seed.as_deref().and_then(|slice| slice.try_into().ok());
+    fn key_gen(
+        &self,
+        py: Python<'_>,
+        seed: Option<PyBuffer<u8>>,
+    ) -> PyResult<(PyVerificationKey, PySigningKey)> {
+        let mut seed_inner = Zeroizing::new([0u8; 32]);
+        let seed_bytes: Option<&[u8; 32]> = match &seed {
+            Some(b) => {
+                if b.len_bytes() != 32 {
+                    return Err(PyValueError::new_err("Seed must be exactly 32 bytes long"));
+                }
+                b.copy_to_slice(py, &mut *seed_inner)?;
+                Some(&*&seed_inner)
+            }
+            None => None,
+        };
 
         match self.params {
             ParameterSet::MlDsa44 => {
@@ -243,11 +253,9 @@ impl MlDsa {
             (ParameterSet::MlDsa87, SkInner::P87(k)) => {
                 sign_impl::<MlDsa87>(py, k, msg, ctx, deterministic)
             }
-            _ => {
-                return Err(PyValueError::new_err(
-                    "Key does not match this ML_DSA parameter set",
-                ));
-            }
+            _ => Err(PyValueError::new_err(
+                "Key does not match this ML_DSA parameter set",
+            )),
         }
     }
 
@@ -265,11 +273,9 @@ impl MlDsa {
             (ParameterSet::MlDsa44, VkInner::P44(k)) => Ok(MlDsa44::verify(k, msg, ctx, sig)),
             (ParameterSet::MlDsa65, VkInner::P65(k)) => Ok(MlDsa65::verify(k, msg, ctx, sig)),
             (ParameterSet::MlDsa87, VkInner::P87(k)) => Ok(MlDsa87::verify(k, msg, ctx, sig)),
-            _ => {
-                return Err(PyValueError::new_err(
-                    "Key does not match this ML_DSA parameter set",
-                ));
-            }
+            _ => Err(PyValueError::new_err(
+                "Key does not match this ML_DSA parameter set",
+            )),
         }
     }
 }

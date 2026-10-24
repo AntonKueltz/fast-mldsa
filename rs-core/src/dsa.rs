@@ -277,12 +277,12 @@ fn sign_random<P: Dsa, const K: usize, const L: usize>(
     deterministic: bool,
     sig: &mut [u8],
 ) -> bool {
-    let mut rnd = [0u8; 32];
+    let mut rnd = Zeroizing::new([0u8; 32]);
 
     if deterministic {
         sign_internal::<P, K, L>(sk, msg, ctx, &rnd, sig);
         true
-    } else if getrandom::fill(&mut rnd).is_ok() {
+    } else if getrandom::fill(&mut *rnd).is_ok() {
         sign_internal::<P, K, L>(sk, msg, ctx, &rnd, sig);
         true
     } else {

@@ -33,10 +33,10 @@ exactly 32 bytes long.
 from fastmldsa import ML_DSA
 
 dsa = ML_DSA()
-seed = b"\x00" * 32  # this would be a terrible seed - easy to guess
+seed = bytearray(32)  # this would be a terrible seed (all zeroes) - easy to guess
 vk, sk = dsa.key_gen(seed)  # verification and signing key from seed
 
-wrong_len = b"\x00" * 31
+wrong_len = bytearray(31)
 vk, sk = dsa.key_gen(wrong_len)  # => ValueError
 ```
 
@@ -77,6 +77,48 @@ dsa = ML_DSA(ParameterSet.ML_DSA_87)
 vk, sk = dsa.key_gen()  # verification and signing key for ML-DSA-87 parameter set
 valid = dsa.verify(vk, sig, msg, ctx)  # check if the signature is valid
 ```
+
+# Security
+
+> [!WARNING]
+> This package has not been audited by a third party. For security critical applications I recommend using a more established crypto library.
+
+## Timing Attacks
+
+This package aims for a constant time implementation of any code that operates on secret
+material. There is no branching done on any secret material. This does not guarantee
+that the compiler generates assembly with no branches or timing leakage in it. You can
+use e.g. `cargo asm` to inspect the assembly for the target architecture. You can also
+use some of the constant time tests in [`rs-core/examples`](./rs-core/examples/) to check
+if code executes in constant time on your machine. These tests use the
+[rust port](https://github.com/rozbb/dudect-bencher) of
+[dudect](https://github.com/oreparaz/dudect). A constant time implementation will have a
+max t value that stays more or less constant over time.
+
+```bash
+cargo ct-poly  # run the constant time tests for all relevant functions of polynomials
+cargo ct-poly --continuous inv_ntt  # run the inv-ntt polynomial function test
+```
+
+There is also an opportunity to use additional tools like [ctgrind](https://github.com/agl/ctgrind)
+and [timecop](https://www.post-apocalyptic-crypto.org/timecop/) to further increase confidence.
+
+## Memory Management
+
+In accordance with the FIPS standard a best effort is made to zero out all intermediate
+values in key generation and signing that are considered secret. The rust core code is no-std
+compatible and does not do any dynamic memory allocation.
+
+Note that once sensitive material is in the hands of the consuming application it is up to that
+application to properly manage that material. In particular, signing keys _will_ have their memory
+zeroized by the underlying rust implementation, but only once the reference count on the python side
+is 0 and `dealloc` is invoked during garbage collection.
+
+Care should also be taken with sensitive material that is passed _to_ this package.
+`dsa.key_gen(seed)` and `SigningKey.from_bytes(data)` allow a `bytearray` or `memoryview`
+to be used for `seed`  and `data` for this reason - they are sensitive material that the
+application may want to zero out after passing them as args. Immutable `bytes` would not support
+this.
 
 # Development
 
@@ -122,15 +164,15 @@ ops=['keygen', 'sign', 'verify'] duration=1.0s repeats=5 warmup=0.5s
 
 op             param set      ops/sec (med)     µs/op           min           max       stdev
 ---------------------------------------------------------------------------------------------
-keygen         ML_DSA_44             11,535      86.7        11,365        11,727         146
-sign           ML_DSA_44              5,340     187.3         5,122         5,479         141
-verify         ML_DSA_44             29,753      33.6        29,508        30,015         205
-keygen         ML_DSA_65              6,842     146.2         6,822         6,893          30
-sign           ML_DSA_65              3,390     295.0         3,351         3,594         117
-verify         ML_DSA_65             21,920      45.6        21,794        22,115         121
-keygen         ML_DSA_87              4,619     216.5         4,553         4,645          34
-sign           ML_DSA_87              3,075     325.2         2,965         3,175          83
-verify         ML_DSA_87             16,082      62.2        15,889        16,101          87
+keygen         ML_DSA_44             11,544      86.6        10,296        11,712         613
+sign           ML_DSA_44              5,205     192.1         4,610         5,373         305
+verify         ML_DSA_44             29,776      33.6        29,316        30,157         328
+keygen         ML_DSA_65              6,818     146.7         6,711         6,864          59
+sign           ML_DSA_65              3,396     294.4         3,119         3,526         178
+verify         ML_DSA_65             21,789      45.9        21,594        21,839         108
+keygen         ML_DSA_87              4,571     218.8         4,534         4,601          28
+sign           ML_DSA_87              3,010     332.3         2,813         3,251         182
+verify         ML_DSA_87             15,876      63.0        15,370        15,955         255
 ```
 
 Depending on your specific CPU architecture, you may be able to see significant performance
@@ -143,15 +185,15 @@ ops=['keygen', 'sign', 'verify'] duration=1.0s repeats=5 warmup=0.5s
 
 op             param set      ops/sec (med)     µs/op           min           max       stdev
 ---------------------------------------------------------------------------------------------
-keygen         ML_DSA_44             16,673      60.0        16,362        16,876         191
-sign           ML_DSA_44              9,975     100.2         9,821        10,227         178
-verify         ML_DSA_44             49,534      20.2        46,771        49,668       1,236
-keygen         ML_DSA_65              9,134     109.5         9,115         9,205          44
-sign           ML_DSA_65              7,014     142.6         6,896         7,176         116
-verify         ML_DSA_65             38,854      25.7        38,666        39,045         147
-keygen         ML_DSA_87              6,114     163.5         6,087         6,150          27
-sign           ML_DSA_87              6,325     158.1         6,291         6,560         131
-verify         ML_DSA_87             29,069      34.4        28,944        29,530         241
+keygen         ML_DSA_44             13,898      72.0        13,582        14,008         175
+sign           ML_DSA_44              9,475     105.5         9,099         9,532         209
+verify         ML_DSA_44             48,847      20.5        47,495        48,895         606
+keygen         ML_DSA_65              8,184     122.2         8,150         8,245          39
+sign           ML_DSA_65              6,255     159.9         6,076         6,548         176
+verify         ML_DSA_65             38,977      25.7        38,755        39,178         156
+keygen         ML_DSA_87              5,636     177.4         5,068         5,704         272
+sign           ML_DSA_87              5,861     170.6         5,705         5,980         101
+verify         ML_DSA_87             29,253      34.2        25,930        29,601       1,547
 ```
 
 ## Rust Benchmarking

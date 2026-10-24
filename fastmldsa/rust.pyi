@@ -1,4 +1,7 @@
 from enum import Enum
+from typing import TypeAlias
+
+Buf: TypeAlias = bytes | bytearray | memoryview
 
 class ParameterSet(Enum):
     ML_DSA_44 = 44
@@ -15,12 +18,12 @@ class SigningKey:
     def __bytes__(self) -> bytes: ...
     def to_bytes(self) -> bytes: ...
     @staticmethod
-    def from_bytes(data: bytes) -> SigningKey: ...
+    def from_bytes(data: Buf) -> SigningKey: ...
 
 class ML_DSA:
-    def __init__(self, parameter_set: ParameterSet): ...
+    def __init__(self, parameter_set: ParameterSet = ParameterSet.ML_DSA_65): ...
     def key_gen(
-        self, seed: bytes | None = None
+        self, seed: Buf | None = None
     ) -> tuple[VerificationKey, SigningKey]: ...
     def sign(
         self,
