@@ -13,8 +13,8 @@ class Test_ML_DSA(TestCase):
 
         for _ in range(ROUNDS):
             msg, ctx = randbytes(randint(8, 1024)), randbytes(randint(0, 128))
-            sig = dsa.sign(sk, msg, ctx)
-            self.assertTrue(dsa.verify(vk, sig, msg, ctx))
+            sig = sk.sign(msg, ctx)
+            self.assertTrue(vk.verify(sig, msg, ctx))
 
             vk_bytes = randbytes(1312)
             vk_ = VerificationKey.from_bytes(vk_bytes)
@@ -33,8 +33,8 @@ class Test_ML_DSA(TestCase):
 
         for _ in range(ROUNDS):
             msg, ctx = randbytes(randint(8, 1024)), randbytes(randint(0, 128))
-            sig = dsa.sign(sk, msg, ctx)
-            self.assertTrue(dsa.verify(vk, sig, msg, ctx))
+            sig = sk.sign(msg, ctx)
+            self.assertTrue(vk.verify(sig, msg, ctx))
 
             vk_bytes = randbytes(1952)
             vk_ = VerificationKey.from_bytes(vk_bytes)
@@ -53,8 +53,8 @@ class Test_ML_DSA(TestCase):
 
         for _ in range(ROUNDS):
             msg, ctx = randbytes(randint(8, 1024)), randbytes(randint(0, 128))
-            sig = dsa.sign(sk, msg, ctx)
-            self.assertTrue(dsa.verify(vk, sig, msg, ctx))
+            sig = sk.sign(msg, ctx)
+            self.assertTrue(vk.verify(sig, msg, ctx))
 
             vk_bytes = randbytes(2592)
             vk_ = VerificationKey.from_bytes(vk_bytes)

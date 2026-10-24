@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from parameterized import parameterized
 
-from fastmldsa import ML_DSA, ParameterSet, SigningKey
+from fastmldsa import SigningKey
 
 
 class TestSignNoSeedMlDsa87(TestCase):
@@ -483,13 +483,11 @@ class TestSignNoSeedMlDsa87(TestCase):
         expected: bytes,
         valid: bool,
     ):
-        dsa = ML_DSA(ParameterSet.ML_DSA_87)
-
         if not valid:
             with self.assertRaises(ValueError):
                 sk = SigningKey.from_bytes(sk_bytes)
-                dsa.sign(sk, msg, ctx, deterministic=True)
+                sk.sign(msg, ctx, deterministic=True)
         else:
             sk = SigningKey.from_bytes(sk_bytes)
-            actual = dsa.sign(sk, msg, ctx, deterministic=True)
+            actual = sk.sign(msg, ctx, deterministic=True)
             self.assertEqual(actual, expected)

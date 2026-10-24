@@ -676,7 +676,7 @@ class TestSignSeedMlDsa87(TestCase):
 
         if not valid:
             with self.assertRaises(ValueError):
-                dsa.sign(sk, msg, ctx, deterministic=True)
+                sk.sign(msg, ctx, deterministic=True)
         else:
-            sig = dsa.sign(sk, msg, ctx, deterministic=True)
+            sig = sk.sign(msg, ctx, deterministic=True)
             self.assertEqual(sig, sig_expected)

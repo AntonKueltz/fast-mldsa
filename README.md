@@ -12,11 +12,11 @@ dsa = ML_DSA()
 vk, sk = dsa.key_gen()  # verification and signing key
 
 msg, ctx = b"...", b"..."
-sig = dsa.sign(sk, msg, ctx)  # signature over the message and context
-valid = dsa.verify(vk, sig, msg, ctx)  # check if the signature is valid
+sig = sk.sign(msg, ctx)  # signature over the message and context
+valid = vk.verify(sig, msg, ctx)  # check if the signature is valid
 
 # you can also sign with no context, which is equivalent to a context of b""
-sig = dsa.sign(sk, msg)
+sig = sk.sign(msg)
 ```
 
 ## Keys from Seeds
@@ -53,14 +53,14 @@ dsa = ML_DSA()
 vk, sk = dsa.key_gen()  # verification and signing key
 msg, ctx = b"...", b"..."
 
-sig1 = dsa.sign(
-    sk, msg, ctx, deterministic=True
+sig1 = sk.sign(
+    msg, ctx, deterministic=True
 )  # detrministic signature over the message and context
-sig2 = dsa.sign(sk, msg, ctx, deterministic=True)
+sig2 = sk.sign(msg, ctx, deterministic=True)
 assert sig1 == sig2
 
-sig1 = dsa.sign(sk, msg, ctxt)  # "hedged" signature over the message and context
-sig2 = dsa.sign(sk, msg, ctxt)
+sig1 = sk.sign(msg, ctxt)  # "hedged" signature over the message and context
+sig2 = sk.sign(msg, ctxt)
 assert sig1 != sig2
 ```
 
@@ -75,7 +75,7 @@ from fastmldsa import ML_DSA, ParameterSet
 
 dsa = ML_DSA(ParameterSet.ML_DSA_87)
 vk, sk = dsa.key_gen()  # verification and signing key for ML-DSA-87 parameter set
-valid = dsa.verify(vk, sig, msg, ctx)  # check if the signature is valid
+valid = vk.verify(sig, msg, ctx)  # check if the signature is valid
 ```
 
 # Security

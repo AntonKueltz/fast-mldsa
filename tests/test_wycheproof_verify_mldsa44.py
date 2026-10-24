@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from parameterized import parameterized
 
-from fastmldsa import ML_DSA, ParameterSet, VerificationKey
+from fastmldsa import VerificationKey
 
 
 class TestVerifyMlDsa44(TestCase):
@@ -1379,12 +1379,10 @@ class TestVerifyMlDsa44(TestCase):
         sig: bytes,
         expected: bool,
     ):
-        dsa = ML_DSA(ParameterSet.ML_DSA_44)
-
         try:
             pk = VerificationKey.from_bytes(pk_bytes)
         except ValueError:
             self.assertFalse(expected)
         else:
-            actual = dsa.verify(pk, sig, msg, ctx)
+            actual = pk.verify(sig, msg, ctx)
             self.assertIs(actual, expected)

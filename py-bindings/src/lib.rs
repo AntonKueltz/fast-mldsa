@@ -31,11 +31,13 @@ enum SkInner {
 #[pyclass(name = "VerificationKey", frozen)]
 struct PyVerificationKey {
     inner: VkInner,
+    params: ParameterSet,
 }
 
 #[pyclass(name = "SigningKey", frozen)]
 struct PySigningKey {
     inner: SkInner,
+    params: ParameterSet,
 }
 
 #[pyclass(name = "ML_DSA", frozen)]
@@ -93,19 +95,36 @@ impl PyVerificationKey {
                 inner: VkInner::P44(
                     VerificationKey::<4, 4>::from_bytes(data).map_err(PyValueError::new_err)?,
                 ),
+                params: ParameterSet::MlDsa44,
             }),
             1952 => Ok(Self {
                 inner: VkInner::P65(
                     VerificationKey::<6, 5>::from_bytes(data).map_err(PyValueError::new_err)?,
                 ),
+                params: ParameterSet::MlDsa65,
             }),
             2592 => Ok(Self {
                 inner: VkInner::P87(
                     VerificationKey::<8, 7>::from_bytes(data).map_err(PyValueError::new_err)?,
                 ),
+                params: ParameterSet::MlDsa87,
             }),
             _ => Err(PyValueError::new_err(
                 "Invalid verification key length; expected 1312, 1952, or 2592",
+            )),
+        }
+    }
+
+    #[pyo3(signature = (sig, msg, ctx = None))]
+    fn verify(&self, sig: &[u8], msg: &[u8], ctx: Option<&[u8]>) -> PyResult<bool> {
+        let ctx = ctx.unwrap_or(&[]);
+
+        match (self.params, &self.inner) {
+            (ParameterSet::MlDsa44, VkInner::P44(k)) => Ok(MlDsa44::verify(k, msg, ctx, sig)),
+            (ParameterSet::MlDsa65, VkInner::P65(k)) => Ok(MlDsa65::verify(k, msg, ctx, sig)),
+            (ParameterSet::MlDsa87, VkInner::P87(k)) => Ok(MlDsa87::verify(k, msg, ctx, sig)),
+            _ => Err(PyValueError::new_err(
+                "Key does not match this ML_DSA parameter set",
             )),
         }
     }
@@ -150,20 +169,53 @@ impl PySigningKey {
         data.copy_to_slice(py, &mut buf[..len])?;
         let bytes = &buf[..len];
 
-        let inner = match len {
-            2560 => SkInner::P44(
-                SigningKey::<4, 4>::from_bytes(bytes, 2).map_err(PyValueError::new_err)?,
-            ),
-            4032 => SkInner::P65(
-                SigningKey::<6, 5>::from_bytes(bytes, 4).map_err(PyValueError::new_err)?,
-            ),
-            4896 => SkInner::P87(
-                SigningKey::<8, 7>::from_bytes(bytes, 2).map_err(PyValueError::new_err)?,
-            ),
+        match len {
+            2560 => Ok(Self {
+                inner: SkInner::P44(
+                    SigningKey::<4, 4>::from_bytes(bytes, 2).map_err(PyValueError::new_err)?,
+                ),
+                params: ParameterSet::MlDsa44,
+            }),
+            4032 => Ok(Self {
+                inner: SkInner::P65(
+                    SigningKey::<6, 5>::from_bytes(bytes, 4).map_err(PyValueError::new_err)?,
+                ),
+                params: ParameterSet::MlDsa65,
+            }),
+            4896 => Ok(Self {
+                inner: SkInner::P87(
+                    SigningKey::<8, 7>::from_bytes(bytes, 2).map_err(PyValueError::new_err)?,
+                ),
+                params: ParameterSet::MlDsa87,
+            }),
             _ => unreachable!(),
-        };
+        }
+    }
 
-        Ok(Self { inner })
+    #[pyo3(signature = (msg, ctx = None, deterministic = false))]
+    fn sign<'py>(
+        &self,
+        py: Python<'py>,
+        msg: &[u8],
+        ctx: Option<&[u8]>,
+        deterministic: bool,
+    ) -> PyResult<Bound<'py, PyBytes>> {
+        let ctx = ctx.unwrap_or(&[]);
+
+        match (self.params, &self.inner) {
+            (ParameterSet::MlDsa44, SkInner::P44(k)) => {
+                sign_impl::<MlDsa44>(py, &k, msg, ctx, deterministic)
+            }
+            (ParameterSet::MlDsa65, SkInner::P65(k)) => {
+                sign_impl::<MlDsa65>(py, &k, msg, ctx, deterministic)
+            }
+            (ParameterSet::MlDsa87, SkInner::P87(k)) => {
+                sign_impl::<MlDsa87>(py, &k, msg, ctx, deterministic)
+            }
+            _ => Err(PyValueError::new_err(
+                "Key does not match this ML_DSA parameter set",
+            )),
+        }
     }
 }
 
@@ -201,9 +253,11 @@ impl MlDsa {
                 Ok((
                     PyVerificationKey {
                         inner: VkInner::P44(pk),
+                        params: ParameterSet::MlDsa44,
                     },
                     PySigningKey {
                         inner: SkInner::P44(sk),
+                        params: ParameterSet::MlDsa44,
                     },
                 ))
             }
@@ -212,9 +266,11 @@ impl MlDsa {
                 Ok((
                     PyVerificationKey {
                         inner: VkInner::P65(pk),
+                        params: ParameterSet::MlDsa65,
                     },
                     PySigningKey {
                         inner: SkInner::P65(sk),
+                        params: ParameterSet::MlDsa65,
                     },
                 ))
             }
@@ -223,59 +279,14 @@ impl MlDsa {
                 Ok((
                     PyVerificationKey {
                         inner: VkInner::P87(pk),
+                        params: ParameterSet::MlDsa87,
                     },
                     PySigningKey {
                         inner: SkInner::P87(sk),
+                        params: ParameterSet::MlDsa87,
                     },
                 ))
             }
-        }
-    }
-
-    #[pyo3(signature = (sk, msg, ctx = None, deterministic = false))]
-    fn sign<'py>(
-        &self,
-        py: Python<'py>,
-        sk: &PySigningKey,
-        msg: &[u8],
-        ctx: Option<&[u8]>,
-        deterministic: bool,
-    ) -> PyResult<Bound<'py, PyBytes>> {
-        let ctx = ctx.unwrap_or(&[]);
-
-        match (self.params, &sk.inner) {
-            (ParameterSet::MlDsa44, SkInner::P44(k)) => {
-                sign_impl::<MlDsa44>(py, k, msg, ctx, deterministic)
-            }
-            (ParameterSet::MlDsa65, SkInner::P65(k)) => {
-                sign_impl::<MlDsa65>(py, k, msg, ctx, deterministic)
-            }
-            (ParameterSet::MlDsa87, SkInner::P87(k)) => {
-                sign_impl::<MlDsa87>(py, k, msg, ctx, deterministic)
-            }
-            _ => Err(PyValueError::new_err(
-                "Key does not match this ML_DSA parameter set",
-            )),
-        }
-    }
-
-    #[pyo3(signature = (vk, sig, msg, ctx = None))]
-    fn verify(
-        &self,
-        vk: &PyVerificationKey,
-        sig: &[u8],
-        msg: &[u8],
-        ctx: Option<&[u8]>,
-    ) -> PyResult<bool> {
-        let ctx = ctx.unwrap_or(&[]);
-
-        match (self.params, &vk.inner) {
-            (ParameterSet::MlDsa44, VkInner::P44(k)) => Ok(MlDsa44::verify(k, msg, ctx, sig)),
-            (ParameterSet::MlDsa65, VkInner::P65(k)) => Ok(MlDsa65::verify(k, msg, ctx, sig)),
-            (ParameterSet::MlDsa87, VkInner::P87(k)) => Ok(MlDsa87::verify(k, msg, ctx, sig)),
-            _ => Err(PyValueError::new_err(
-                "Key does not match this ML_DSA parameter set",
-            )),
         }
     }
 }

@@ -16,9 +16,9 @@ class TestAccumulated(TestCase):
             seed = s.read(32)
             pk, sk = dsa.key_gen(seed)
             a.update(bytes(pk))
-            sig = dsa.sign(sk, b"", b"", deterministic=True)
+            sig = sk.sign(b"", b"", deterministic=True)
             a.update(sig)
-            assert dsa.verify(pk, sig, b"", b"")
+            assert pk.verify(sig, b"", b"")
 
         return a.read(32)
 
