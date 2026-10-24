@@ -1,15 +1,14 @@
 from random import randbytes, randint
 from unittest import TestCase
 
-from fastmldsa import ML_DSA, ParameterSet, SigningKey, VerificationKey
+from fastmldsa import MlDsa44, MlDsa65, MlDsa87, SigningKey, VerificationKey
 
 ROUNDS = 1000
 
 
 class Test_ML_DSA(TestCase):
     def test_mldsa44(self):
-        dsa = ML_DSA(ParameterSet.ML_DSA_44)
-        vk, sk = dsa.key_gen()
+        vk, sk = MlDsa44.key_gen()
 
         for _ in range(ROUNDS):
             msg, ctx = randbytes(randint(8, 1024)), randbytes(randint(0, 128))
@@ -28,8 +27,7 @@ class Test_ML_DSA(TestCase):
                 pass
 
     def test_mldsa65(self):
-        dsa = ML_DSA(ParameterSet.ML_DSA_65)
-        vk, sk = dsa.key_gen()
+        vk, sk = MlDsa65.key_gen()
 
         for _ in range(ROUNDS):
             msg, ctx = randbytes(randint(8, 1024)), randbytes(randint(0, 128))
@@ -48,8 +46,7 @@ class Test_ML_DSA(TestCase):
                 pass
 
     def test_mldsa87(self):
-        dsa = ML_DSA(ParameterSet.ML_DSA_87)
-        vk, sk = dsa.key_gen()
+        vk, sk = MlDsa87.key_gen()
 
         for _ in range(ROUNDS):
             msg, ctx = randbytes(randint(8, 1024)), randbytes(randint(0, 128))

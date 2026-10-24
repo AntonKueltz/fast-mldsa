@@ -136,7 +136,7 @@ impl PySigningKey {
         match &self.inner {
             SkInner::P44(k) => {
                 let mut bytes = Zeroizing::new([0u8; 2560]);
-                k.to_bytes(&mut *bytes, 3);
+                k.to_bytes(&mut *bytes, 2);
                 Ok(PyBytes::new(py, &(*bytes)))
             }
             SkInner::P65(k) => {
@@ -146,7 +146,7 @@ impl PySigningKey {
             }
             SkInner::P87(k) => {
                 let mut bytes = Zeroizing::new([0u8; 4896]);
-                k.to_bytes(&mut *bytes, 3);
+                k.to_bytes(&mut *bytes, 2);
                 Ok(PyBytes::new(py, &(*bytes)))
             }
         }
@@ -204,13 +204,13 @@ impl PySigningKey {
 
         match (self.params, &self.inner) {
             (ParameterSet::MlDsa44, SkInner::P44(k)) => {
-                sign_impl::<MlDsa44>(py, &k, msg, ctx, deterministic)
+                sign_impl::<MlDsa44>(py, k, msg, ctx, deterministic)
             }
             (ParameterSet::MlDsa65, SkInner::P65(k)) => {
-                sign_impl::<MlDsa65>(py, &k, msg, ctx, deterministic)
+                sign_impl::<MlDsa65>(py, k, msg, ctx, deterministic)
             }
             (ParameterSet::MlDsa87, SkInner::P87(k)) => {
-                sign_impl::<MlDsa87>(py, &k, msg, ctx, deterministic)
+                sign_impl::<MlDsa87>(py, k, msg, ctx, deterministic)
             }
             _ => Err(PyValueError::new_err(
                 "Key does not match this ML_DSA parameter set",
@@ -221,11 +221,16 @@ impl PySigningKey {
 
 #[pymethods]
 impl MlDsa {
-    #[new]
-    #[pyo3(signature = (parameter_set = ParameterSet::MlDsa65))]
-    fn new(parameter_set: ParameterSet) -> Self {
-        Self {
-            params: parameter_set,
+    #[getter]
+    fn parameter_set(&self) -> ParameterSet {
+        self.params
+    }
+
+    fn __repr__(&self) -> &'static str {
+        match self.params {
+            ParameterSet::MlDsa44 => "ML-DSA-44",
+            ParameterSet::MlDsa65 => "ML-DSA-65",
+            ParameterSet::MlDsa87 => "ML-DSA-87",
         }
     }
 
@@ -242,7 +247,7 @@ impl MlDsa {
                     return Err(PyValueError::new_err("Seed must be exactly 32 bytes long"));
                 }
                 b.copy_to_slice(py, &mut *seed_inner)?;
-                Some(&*&seed_inner)
+                Some(&*seed_inner)
             }
             None => None,
         };
@@ -297,5 +302,29 @@ fn rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyVerificationKey>()?;
     m.add_class::<PySigningKey>()?;
     m.add_class::<MlDsa>()?;
+    m.add(
+        "MlDsa",
+        MlDsa {
+            params: ParameterSet::MlDsa65,
+        },
+    )?;
+    m.add(
+        "MlDsa44",
+        MlDsa {
+            params: ParameterSet::MlDsa44,
+        },
+    )?;
+    m.add(
+        "MlDsa65",
+        MlDsa {
+            params: ParameterSet::MlDsa65,
+        },
+    )?;
+    m.add(
+        "MlDsa87",
+        MlDsa {
+            params: ParameterSet::MlDsa87,
+        },
+    )?;
     Ok(())
 }

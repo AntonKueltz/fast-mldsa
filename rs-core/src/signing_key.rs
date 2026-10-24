@@ -77,30 +77,31 @@ impl<const K: usize, const L: usize> SigningKey<K, L> {
         Ok(sk)
     }
 
-    pub fn to_bytes(&self, buf: &mut [u8], eta_d: usize) {
-        let inc: usize = eta_d << 5;
-        assert_eq!(buf.len(), 128 + (L + K) * inc + K * 416);
+    pub fn to_bytes(&self, buf: &mut [u8], eta: usize) {
+        let eta_bits = if eta == 2 { 3 } else { 4 };
+        let s_size = eta_bits << 5;
+        assert_eq!(buf.len(), 128 + (L + K) * s_size + K * 416);
 
         buf[..32].copy_from_slice(self.rho.as_slice());
         buf[32..64].copy_from_slice(self.k.as_slice());
         buf[64..128].copy_from_slice(self.tr.as_slice());
 
         let mut start = 128;
-        let mut end = start + inc;
+        let mut end = start + s_size;
 
         for i in 0..L {
-            self.s1.entries[i].to_bytes(&mut buf[start..end], eta_d);
+            self.s1.entries[i].to_bytes(&mut buf[start..end], eta_bits);
             start = end;
-            end += inc;
+            end += s_size;
         }
 
         for i in 0..K {
-            self.s2.entries[i].to_bytes(&mut buf[start..end], eta_d);
+            self.s2.entries[i].to_bytes(&mut buf[start..end], eta_bits);
             start = end;
-            end += inc;
+            end += s_size;
         }
 
-        end += 416 - inc;
+        end += 416 - s_size;
         for i in 0..K {
             self.t0.entries[i].to_bytes(&mut buf[start..end], 13);
             start = end;

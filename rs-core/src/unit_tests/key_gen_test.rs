@@ -275,7 +275,7 @@ fn test_key_gen_internal_44_01() {
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -556,7 +556,7 @@ fn test_key_gen_internal_44_02() {
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -837,7 +837,7 @@ fn test_key_gen_internal_44_03() {
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -1118,7 +1118,7 @@ fn test_key_gen_internal_44_04() {
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -1399,7 +1399,7 @@ fn test_key_gen_internal_44_05() {
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -1680,7 +1680,7 @@ fn test_key_gen_internal_44_06() {
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -1961,7 +1961,7 @@ fn test_key_gen_internal_44_07() {
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -2242,7 +2242,7 @@ fn test_key_gen_internal_44_08() {
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -2523,7 +2523,7 @@ fn test_key_gen_internal_44_09() {
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -2804,7 +2804,7 @@ fn test_key_gen_internal_44_10() {
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -3085,7 +3085,7 @@ fn test_key_gen_internal_44_11() {
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -3366,7 +3366,7 @@ fn test_key_gen_internal_44_12() {
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -3647,7 +3647,7 @@ fn test_key_gen_internal_44_13() {
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -3928,7 +3928,7 @@ fn test_key_gen_internal_44_14() {
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -4209,7 +4209,7 @@ fn test_key_gen_internal_44_15() {
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -4490,7 +4490,7 @@ fn test_key_gen_internal_44_16() {
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -4771,7 +4771,7 @@ fn test_key_gen_internal_44_17() {
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -5052,7 +5052,7 @@ fn test_key_gen_internal_44_18() {
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -5333,7 +5333,7 @@ fn test_key_gen_internal_44_19() {
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -5614,7 +5614,7 @@ fn test_key_gen_internal_44_20() {
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -5895,7 +5895,7 @@ fn test_key_gen_internal_44_21() {
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -6176,7 +6176,7 @@ fn test_key_gen_internal_44_22() {
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -6457,7 +6457,7 @@ fn test_key_gen_internal_44_23() {
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -6738,7 +6738,7 @@ fn test_key_gen_internal_44_24() {
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -7019,7 +7019,7 @@ fn test_key_gen_internal_44_25() {
     let mut pk_bytes = [0u8; 1312];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 2560];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -18091,7 +18091,7 @@ fn test_key_gen_internal_87_01() {
     let mut pk_bytes = [0u8; 2592];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 4896];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -18613,7 +18613,7 @@ fn test_key_gen_internal_87_02() {
     let mut pk_bytes = [0u8; 2592];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 4896];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -19135,7 +19135,7 @@ fn test_key_gen_internal_87_03() {
     let mut pk_bytes = [0u8; 2592];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 4896];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -19657,7 +19657,7 @@ fn test_key_gen_internal_87_04() {
     let mut pk_bytes = [0u8; 2592];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 4896];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -20179,7 +20179,7 @@ fn test_key_gen_internal_87_05() {
     let mut pk_bytes = [0u8; 2592];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 4896];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -20701,7 +20701,7 @@ fn test_key_gen_internal_87_06() {
     let mut pk_bytes = [0u8; 2592];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 4896];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -21223,7 +21223,7 @@ fn test_key_gen_internal_87_07() {
     let mut pk_bytes = [0u8; 2592];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 4896];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -21745,7 +21745,7 @@ fn test_key_gen_internal_87_08() {
     let mut pk_bytes = [0u8; 2592];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 4896];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -22267,7 +22267,7 @@ fn test_key_gen_internal_87_09() {
     let mut pk_bytes = [0u8; 2592];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 4896];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -22789,7 +22789,7 @@ fn test_key_gen_internal_87_10() {
     let mut pk_bytes = [0u8; 2592];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 4896];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -23311,7 +23311,7 @@ fn test_key_gen_internal_87_11() {
     let mut pk_bytes = [0u8; 2592];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 4896];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -23833,7 +23833,7 @@ fn test_key_gen_internal_87_12() {
     let mut pk_bytes = [0u8; 2592];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 4896];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -24355,7 +24355,7 @@ fn test_key_gen_internal_87_13() {
     let mut pk_bytes = [0u8; 2592];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 4896];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -24877,7 +24877,7 @@ fn test_key_gen_internal_87_14() {
     let mut pk_bytes = [0u8; 2592];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 4896];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -25399,7 +25399,7 @@ fn test_key_gen_internal_87_15() {
     let mut pk_bytes = [0u8; 2592];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 4896];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -25921,7 +25921,7 @@ fn test_key_gen_internal_87_16() {
     let mut pk_bytes = [0u8; 2592];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 4896];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -26443,7 +26443,7 @@ fn test_key_gen_internal_87_17() {
     let mut pk_bytes = [0u8; 2592];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 4896];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -26965,7 +26965,7 @@ fn test_key_gen_internal_87_18() {
     let mut pk_bytes = [0u8; 2592];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 4896];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -27487,7 +27487,7 @@ fn test_key_gen_internal_87_19() {
     let mut pk_bytes = [0u8; 2592];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 4896];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -28009,7 +28009,7 @@ fn test_key_gen_internal_87_20() {
     let mut pk_bytes = [0u8; 2592];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 4896];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -28531,7 +28531,7 @@ fn test_key_gen_internal_87_21() {
     let mut pk_bytes = [0u8; 2592];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 4896];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -29053,7 +29053,7 @@ fn test_key_gen_internal_87_22() {
     let mut pk_bytes = [0u8; 2592];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 4896];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -29575,7 +29575,7 @@ fn test_key_gen_internal_87_23() {
     let mut pk_bytes = [0u8; 2592];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 4896];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -30097,7 +30097,7 @@ fn test_key_gen_internal_87_24() {
     let mut pk_bytes = [0u8; 2592];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 4896];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);
@@ -30619,7 +30619,7 @@ fn test_key_gen_internal_87_25() {
     let mut pk_bytes = [0u8; 2592];
     pk.to_bytes(&mut pk_bytes);
     let mut sk_bytes = [0u8; 4896];
-    sk.to_bytes(&mut sk_bytes, 3);
+    sk.to_bytes(&mut sk_bytes, 2);
 
     assert_eq!(pk_bytes, expected_pk);
     assert_eq!(sk_bytes, expected_sk);

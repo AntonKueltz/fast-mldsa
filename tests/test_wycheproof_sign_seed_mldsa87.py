@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from parameterized import parameterized
 
-from fastmldsa import ML_DSA, ParameterSet
+from fastmldsa import MlDsa87
 
 
 class TestSignSeedMlDsa87(TestCase):
@@ -668,8 +668,7 @@ class TestSignSeedMlDsa87(TestCase):
         sig_expected: bytes,
         valid: bool,
     ):
-        dsa = ML_DSA(ParameterSet.ML_DSA_87)
-        pk, sk = dsa.key_gen(seed)
+        pk, sk = MlDsa87.key_gen(seed)
 
         if pk_expected:
             self.assertEqual(bytes(pk), pk_expected)

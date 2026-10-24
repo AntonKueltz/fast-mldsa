@@ -19,8 +19,9 @@ import statistics
 import time
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
+from typing import Any
 
-from fastmldsa import ML_DSA, ParameterSet, SigningKey, VerificationKey
+from fastmldsa import MlDsa44, MlDsa65, MlDsa87, SigningKey, VerificationKey
 
 
 @dataclass(frozen=True)
@@ -33,14 +34,14 @@ class Case:
     """
 
     name: str
-    ps: ParameterSet
+    dsa: Any
     sizes: tuple[int, int, int]
 
 
 CASES = [
-    Case("ML_DSA_44", ParameterSet.ML_DSA_44, (1312, 2560, 2420)),
-    Case("ML_DSA_65", ParameterSet.ML_DSA_65, (1952, 4032, 3309)),
-    Case("ML_DSA_87", ParameterSet.ML_DSA_87, (2592, 4896, 4627)),
+    Case("ML_DSA_44", MlDsa44, (1312, 2560, 2420)),
+    Case("ML_DSA_65", MlDsa65, (1952, 4032, 3309)),
+    Case("ML_DSA_87", MlDsa87, (2592, 4896, 4627)),
 ]
 
 
@@ -124,11 +125,11 @@ def _check(cond: bool, msg: str) -> None:
         raise AssertionError(msg)
 
 
-def _keys(case: Case) -> tuple[ML_DSA, VerificationKey, SigningKey]:
+def _keys(case: Case) -> tuple[Any, VerificationKey, SigningKey]:
     """Fresh keypair with size and type sanity checks."""
     vk_len, sk_len, _ = case.sizes
 
-    dsa = ML_DSA(case.ps)
+    dsa = case.dsa
     vk, sk = dsa.key_gen()
 
     _check(isinstance(vk, VerificationKey), f"{case.name}: vk has wrong type")
@@ -158,10 +159,10 @@ def make_keygen(case: Case) -> Callable[[], object]:
 
 
 def make_sign(case: Case) -> Callable[[], object]:
-    dsa, _, sk = _keys(case)  # key generation is outside the timed region
+    _, _, sk = _keys(case)  # key generation is outside the timed region
     sig_len = case.sizes[2]
 
-    sig = dsa.sign(sk, MSG, CTX)
+    sig = sk.sign(MSG, CTX)
     _check(isinstance(sig, bytes), f"{case.name}: signature has wrong type")
     _check(
         len(sig) == sig_len,
@@ -170,32 +171,32 @@ def make_sign(case: Case) -> Callable[[], object]:
 
     # Signing uses rejection sampling, so per-call time varies; the harness
     # averages over many iterations per round to smooth that out.
-    return lambda: dsa.sign(sk, MSG, CTX)
+    return lambda: sk.sign(MSG, CTX)
 
 
 def make_verify(case: Case) -> Callable[[], object]:
-    dsa, vk, sk = _keys(case)  # key generation is outside the timed region
-    sig = dsa.sign(sk, MSG, CTX)  # so is signing
+    _, vk, sk = _keys(case)  # key generation is outside the timed region
+    sig = sk.sign(MSG, CTX)  # so is signing
 
     # Correctness: the signature verifies, and tampered inputs are rejected.
-    _check(dsa.verify(vk, sig, MSG, CTX) is True, f"{case.name}: valid sig rejected")
+    _check(vk.verify(sig, MSG, CTX) is True, f"{case.name}: valid sig rejected")
     bad_msg = bytes([MSG[0] ^ 1]) + MSG[1:]
     _check(
-        dsa.verify(vk, sig, bad_msg, CTX) is False,
+        vk.verify(sig, bad_msg, CTX) is False,
         f"{case.name}: sig accepted for a modified message",
     )
     _check(
-        dsa.verify(vk, sig, MSG, CTX + b"!") is False,
+        vk.verify(sig, MSG, CTX + b"!") is False,
         f"{case.name}: sig accepted for a different context",
     )
     bad_sig = bytes([sig[0] ^ 1]) + sig[1:]
     _check(
-        dsa.verify(vk, bad_sig, MSG, CTX) is False,
+        vk.verify(bad_sig, MSG, CTX) is False,
         f"{case.name}: modified sig accepted",
     )
 
     # Timed region is the success path only.
-    return lambda: dsa.verify(vk, sig, MSG, CTX)
+    return lambda: vk.verify(sig, MSG, CTX)
 
 
 OPS: dict[str, Callable[[Case], Callable[[], object]]] = {

@@ -6,10 +6,9 @@ This implementation's primary objectives are security and speed.
 # Usage
 
 ```python
-from fastmldsa import ML_DSA
+from fastmldsa import MlDsa
 
-dsa = ML_DSA()
-vk, sk = dsa.key_gen()  # verification and signing key
+vk, sk = MlDsa.key_gen()  # verification and signing key
 
 msg, ctx = b"...", b"..."
 sig = sk.sign(msg, ctx)  # signature over the message and context
@@ -30,14 +29,13 @@ exactly 32 bytes long.
 > Use a cryptographically secure pseudorandom number generator (CSPRNG) if you generate a seed. If the seed can be guessed or recovered, then your signing key is compromised.
 
 ```python
-from fastmldsa import ML_DSA
+from fastmldsa import MlDsa
 
-dsa = ML_DSA()
 seed = bytearray(32)  # this would be a terrible seed (all zeroes) - easy to guess
-vk, sk = dsa.key_gen(seed)  # verification and signing key from seed
+vk, sk = MlDsa.key_gen(seed)  # verification and signing key from seed
 
 wrong_len = bytearray(31)
-vk, sk = dsa.key_gen(wrong_len)  # => ValueError
+vk, sk = MlDsa.key_gen(wrong_len)  # => ValueError
 ```
 
 ## Deterministic Signatures
@@ -47,10 +45,9 @@ By default, this library uses the "hedged" version of the algorithm which genera
 variant of signing, which sets those bytes to 0, as follows.
 
 ```python
-from fastmldsa import ML_DSA
+from fastmldsa import MlDsa
 
-dsa = ML_DSA()
-vk, sk = dsa.key_gen()  # verification and signing key
+vk, sk = MlDsa.key_gen()  # verification and signing key
 msg, ctx = b"...", b"..."
 
 sig1 = sk.sign(
@@ -71,10 +68,10 @@ roughly equivalent to the security provided by AES-192. The parameter sets `ML-D
 and `ML-DSA-87` are also supported.
 
 ```python
-from fastmldsa import ML_DSA, ParameterSet
+from fastmldsa import MlDsa87
 
-dsa = ML_DSA(ParameterSet.ML_DSA_87)
-vk, sk = dsa.key_gen()  # verification and signing key for ML-DSA-87 parameter set
+vk, sk = MlDsa87.key_gen()  # verification and signing key for ML-DSA-87 parameter set
+sig = sk.sign(msg)  # signature over the message and context
 valid = vk.verify(sig, msg, ctx)  # check if the signature is valid
 ```
 
@@ -115,7 +112,7 @@ zeroized by the underlying rust implementation, but only once the reference coun
 is 0 and `dealloc` is invoked during garbage collection.
 
 Care should also be taken with sensitive material that is passed _to_ this package.
-`dsa.key_gen(seed)` and `SigningKey.from_bytes(data)` allow a `bytearray` or `memoryview`
+`MlDsa.key_gen(seed)` and `SigningKey.from_bytes(data)` allow a `bytearray` or `memoryview`
 to be used for `seed`  and `data` for this reason - they are sensitive material that the
 application may want to zero out after passing them as args. Immutable `bytes` would not support
 this.

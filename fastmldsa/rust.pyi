@@ -1,12 +1,11 @@
-from enum import Enum
-from typing import TypeAlias
+from typing import ClassVar, TypeAlias
 
 Buf: TypeAlias = bytes | bytearray | memoryview
 
-class ParameterSet(Enum):
-    ML_DSA_44 = 44
-    ML_DSA_65 = 65
-    ML_DSA_87 = 87
+class ParameterSet:
+    ML_DSA_44: ClassVar[ParameterSet]
+    ML_DSA_65: ClassVar[ParameterSet]
+    ML_DSA_87: ClassVar[ParameterSet]
 
 class VerificationKey:
     def __bytes__(self) -> bytes: ...
@@ -25,7 +24,13 @@ class SigningKey:
     ) -> bytes: ...
 
 class ML_DSA:
-    def __init__(self, parameter_set: ParameterSet = ParameterSet.ML_DSA_65): ...
+    @property
+    def parameter_set(self) -> ParameterSet: ...
     def key_gen(
         self, seed: Buf | None = None
     ) -> tuple[VerificationKey, SigningKey]: ...
+
+MlDsa: ML_DSA
+MlDsa44: ML_DSA
+MlDsa65: ML_DSA
+MlDsa87: ML_DSA
