@@ -122,15 +122,15 @@ ops=['keygen', 'sign', 'verify'] duration=1.0s repeats=5 warmup=0.5s
 
 op             param set      ops/sec (med)     µs/op           min           max       stdev
 ---------------------------------------------------------------------------------------------
-keygen         ML_DSA_44             13,159      76.0        12,843        13,290         169
-sign           ML_DSA_44              5,681     176.0         5,469         5,769         133
-verify         ML_DSA_44             29,979      33.4        29,510        30,192         270
-keygen         ML_DSA_65              7,393     135.3         7,266         7,444          66
-sign           ML_DSA_65              3,430     291.5         3,384         3,906         217
-verify         ML_DSA_65             21,905      45.7        21,437        22,073         251
-keygen         ML_DSA_87              4,873     205.2         4,522         4,877         153
-sign           ML_DSA_87              3,082     324.4         3,001         3,253          97
-verify         ML_DSA_87             16,051      62.3        15,698        16,116         182
+keygen         ML_DSA_44             11,535      86.7        11,365        11,727         146
+sign           ML_DSA_44              5,340     187.3         5,122         5,479         141
+verify         ML_DSA_44             29,753      33.6        29,508        30,015         205
+keygen         ML_DSA_65              6,842     146.2         6,822         6,893          30
+sign           ML_DSA_65              3,390     295.0         3,351         3,594         117
+verify         ML_DSA_65             21,920      45.6        21,794        22,115         121
+keygen         ML_DSA_87              4,619     216.5         4,553         4,645          34
+sign           ML_DSA_87              3,075     325.2         2,965         3,175          83
+verify         ML_DSA_87             16,082      62.2        15,889        16,101          87
 ```
 
 Depending on your specific CPU architecture, you may be able to see significant performance

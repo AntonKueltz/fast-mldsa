@@ -1,4 +1,4 @@
-use zeroize::Zeroize;
+use zeroize::{Zeroize, Zeroizing};
 
 use crate::hash::h;
 use crate::matrix::Matrix;
@@ -230,34 +230,33 @@ fn key_gen_random<P: Dsa, const K: usize, const L: usize>(
 ) -> (VerificationKey<K, L>, SigningKey<K, L>) {
     match optional_seed {
         None => {
-            let mut seed = [0u8; 32];
-            getrandom::fill(&mut seed).expect("Rng failure.");
+            let mut seed = Zeroizing::new([0u8; 32]);
+            getrandom::fill(&mut *seed).expect("Rng failure.");
             key_gen_internal::<P, K, L>(&seed)
         }
-        Some(seed) => key_gen_internal::<P, K, L>(&seed),
+        Some(seed) => key_gen_internal::<P, K, L>(seed),
     }
 }
 
 pub(crate) fn key_gen_internal<P: Dsa, const K: usize, const L: usize>(
     seed: &[u8; 32],
 ) -> (VerificationKey<K, L>, SigningKey<K, L>) {
-    let mut buf = [0u8; 128];
-    h(&mut buf, &[seed.as_slice(), &[K as u8, L as u8]]);
+    let mut buf = Zeroizing::new([0u8; 128]);
+    h(&mut *buf, &[seed.as_slice(), &[K as u8, L as u8]]);
 
     let (b1, rest) = buf.split_at(32);
     let (b2, b3) = rest.split_at(64);
 
     let rho: [u8; 32] = b1.try_into().unwrap();
-    let rho_: [u8; 64] = b2.try_into().unwrap();
-    let k: [u8; 32] = b3.try_into().unwrap();
-    buf.zeroize();
+    let rho_: &[u8; 64] = b2.try_into().unwrap();
+    let k: &[u8; 32] = b3.try_into().unwrap();
 
     let a = Matrix::<K, L>::expand_a(&rho);
-    let (s1, s2) = expand_s::<K, L>(&rho_, P::ETA);
-    let mut s1_ = s1.clone();
+    let (s1, s2) = expand_s::<K, L>(rho_, P::ETA);
+    let mut s1_ = Zeroizing::new(s1.clone());
     s1_.ntt();
 
-    let mut t = a.mul_vec(&s1_);
+    let mut t = Zeroizing::new(a.mul_vec(&s1_));
     t.reduce();
     t.inv_ntt();
     t.add_acc(&s2);
@@ -266,7 +265,7 @@ pub(crate) fn key_gen_internal<P: Dsa, const K: usize, const L: usize>(
 
     let pk = VerificationKey::new(t1, rho, a.clone());
     let tr = pk.hash();
-    let sk = SigningKey::new(rho, k, tr, s1, s2, t0, a);
+    let sk = SigningKey::new(rho, *k, tr, s1, s2, t0, a);
 
     (pk, sk)
 }

@@ -20,14 +20,14 @@ pub struct SigningKey<const K: usize, const L: usize> {
 impl<const K: usize, const L: usize> SigningKey<K, L> {
     pub(crate) fn new(
         rho: [u8; 32],
-        k: [u8; 32],
+        mut k: [u8; 32],
         tr: [u8; 64],
         s1: Vector<L>,
         s2: Vector<K>,
         t0: Vector<K>,
         a: Matrix<K, L>,
     ) -> Self {
-        Self {
+        let sk = Self {
             rho,
             k,
             tr,
@@ -35,7 +35,9 @@ impl<const K: usize, const L: usize> SigningKey<K, L> {
             s2,
             t0,
             a,
-        }
+        };
+        k.zeroize();
+        sk
     }
 
     pub fn from_bytes(bytes: &[u8], eta: usize) -> Result<Self, &'static str> {
