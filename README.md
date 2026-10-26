@@ -1,3 +1,6 @@
+[![PyPI](https://img.shields.io/pypi/v/fast-mldsa.svg)](https://pypi.org/project/fast-mldsa/)
+[![ReadTheDocs](https://readthedocs.org/projects/fast-mldsa/badge/?version=latest)](https://fast-mldsa.readthedocs.io/en/latest/?badge=latest)
+
 # Module-Lattice-Based Digital Signature Algorithm (ML-DSA)
 An implementation of the module-lattice-based digital signature algorithm (ML-DSA)
 as described in [FIPS-204](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf).
