@@ -1,4 +1,9 @@
-use pyo3::{buffer::PyBuffer, exceptions::PyValueError, prelude::*, types::PyBytes};
+use pyo3::{
+    buffer::PyBuffer,
+    exceptions::PyValueError,
+    prelude::*,
+    types::{PyByteArray, PyBytes},
+};
 use zeroize::Zeroizing;
 
 use ml_dsa::dsa::{Dsa, MlDsa44, MlDsa65, MlDsa87};
@@ -132,7 +137,36 @@ impl PyVerificationKey {
 
 #[pymethods]
 impl PySigningKey {
-    fn to_bytes<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyBytes>> {
+    fn to_bytes<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyByteArray>> {
+        match &self.inner {
+            SkInner::P44(k) => {
+                let mut bytes = Zeroizing::new([0u8; 2560]);
+                k.to_bytes(&mut *bytes, 2);
+                PyByteArray::new_with(py, 2560, |b: &mut [u8]| {
+                    b.copy_from_slice(&*bytes);
+                    Ok(())
+                })
+            }
+            SkInner::P65(k) => {
+                let mut bytes = Zeroizing::new([0u8; 4032]);
+                k.to_bytes(&mut *bytes, 4);
+                PyByteArray::new_with(py, 4032, |b: &mut [u8]| {
+                    b.copy_from_slice(&*bytes);
+                    Ok(())
+                })
+            }
+            SkInner::P87(k) => {
+                let mut bytes = Zeroizing::new([0u8; 4896]);
+                k.to_bytes(&mut *bytes, 2);
+                PyByteArray::new_with(py, 4896, |b: &mut [u8]| {
+                    b.copy_from_slice(&*bytes);
+                    Ok(())
+                })
+            }
+        }
+    }
+
+    fn __bytes__<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyBytes>> {
         match &self.inner {
             SkInner::P44(k) => {
                 let mut bytes = Zeroizing::new([0u8; 2560]);
@@ -150,10 +184,6 @@ impl PySigningKey {
                 Ok(PyBytes::new(py, &(*bytes)))
             }
         }
-    }
-
-    fn __bytes__<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyBytes>> {
-        self.to_bytes(py)
     }
 
     #[staticmethod]
