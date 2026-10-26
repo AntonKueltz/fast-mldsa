@@ -21,7 +21,7 @@ from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from typing import Any
 
-from fastmldsa import MlDsa44, MlDsa65, MlDsa87, SigningKey, VerificationKey
+from fast_mldsa import MlDsa44, MlDsa65, MlDsa87, SigningKey, VerificationKey
 
 
 @dataclass(frozen=True)

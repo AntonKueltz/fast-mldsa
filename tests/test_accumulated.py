@@ -3,7 +3,7 @@ from unittest import TestCase
 from Crypto.Hash import SHAKE128
 from pytest import mark
 
-from fastmldsa import MlDsa44, MlDsa65, MlDsa87
+from fast_mldsa import MlDsa44, MlDsa65, MlDsa87
 
 
 class TestAccumulated(TestCase):

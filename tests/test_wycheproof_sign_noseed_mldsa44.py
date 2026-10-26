@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from parameterized import parameterized
 
-from fastmldsa import SigningKey
+from fast_mldsa import SigningKey
 
 
 class TestSignNoSeedMlDsa44(TestCase):

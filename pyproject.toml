@@ -1,6 +1,16 @@
 [project]
 name = "fast-mldsa"
+version = "0.1.0"
+description = "Fast module-lattice digital signatures"
+readme = "README.md"
 requires-python = ">=3.11"
+
+license = "CC0-1.0"
+license-files = ["LICENSE"]
+authors = [
+    {name = "Anton Kueltz", email = "kueltz.anton@gmail.com"}
+]
+keywords = ["mldsa", "ml-dsa", "lattice", "module-lattice", "cryptography", "post-quantum", "pqc", "fips-204"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -9,6 +19,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
     "Programming Language :: Rust",
@@ -16,13 +27,12 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX :: Linux"
 ]
-dynamic = ["version"]
 
 [project.urls]
 source = "https://github.com/AntonKueltz/fast-mldsa"
 
 [project.scripts]
-benchmark = "fastmldsa.benchmark:main"
+benchmark = "fast_mldsa.benchmark:main"
 
 [dependency-groups]
 dev = [
@@ -39,7 +49,7 @@ requires = ["maturin>=1.15,<2.0"]
 build-backend = "maturin"
 
 [tool.maturin]
-module-name = "fastmldsa.rust"
+module-name = "fast_mldsa.rust"
 manifest-path = "py-bindings/Cargo.toml"
 
 [tool.pytest.ini_options]

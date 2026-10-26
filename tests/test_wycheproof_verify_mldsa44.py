@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from parameterized import parameterized
 
-from fastmldsa import VerificationKey
+from fast_mldsa import VerificationKey
 
 
 class TestVerifyMlDsa44(TestCase):

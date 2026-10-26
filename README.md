@@ -6,7 +6,7 @@ This implementation's primary objectives are security and speed.
 # Usage
 
 ```python
-from fastmldsa import MlDsa
+from fast_mldsa import MlDsa
 
 vk, sk = MlDsa.key_gen()  # verification and signing key
 
@@ -29,7 +29,7 @@ exactly 32 bytes long.
 > Use a cryptographically secure pseudorandom number generator (CSPRNG) if you generate a seed. If the seed can be guessed or recovered, then your signing key is compromised.
 
 ```python
-from fastmldsa import MlDsa
+from fast_mldsa import MlDsa
 
 seed = bytearray(32)  # this would be a terrible seed (all zeroes) - easy to guess
 vk, sk = MlDsa.key_gen(seed)  # verification and signing key from seed
@@ -45,7 +45,7 @@ By default, this library uses the "hedged" version of the algorithm which genera
 variant of signing, which sets those bytes to 0, as follows.
 
 ```python
-from fastmldsa import MlDsa
+from fast_mldsa import MlDsa
 
 vk, sk = MlDsa.key_gen()  # verification and signing key
 msg, ctx = b"...", b"..."
@@ -68,7 +68,7 @@ roughly equivalent to the security provided by AES-192. The parameter sets `ML-D
 and `ML-DSA-87` are also supported.
 
 ```python
-from fastmldsa import MlDsa87
+from fast_mldsa import MlDsa87
 
 vk, sk = MlDsa87.key_gen()  # verification and signing key for ML-DSA-87 parameter set
 sig = sk.sign(msg)  # signature over the message and context

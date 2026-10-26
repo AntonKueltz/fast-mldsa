@@ -1,7 +1,7 @@
 from random import randbytes, randint
 from unittest import TestCase
 
-from fastmldsa import MlDsa44, MlDsa65, MlDsa87, SigningKey, VerificationKey
+from fast_mldsa import MlDsa44, MlDsa65, MlDsa87, SigningKey, VerificationKey
 
 ROUNDS = 1000
 

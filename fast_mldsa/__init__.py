@@ -1,4 +1,4 @@
-from fastmldsa.rust import (
+from fast_mldsa.rust import (
     MlDsa,  # noqa
     MlDsa44,  # noqa
     MlDsa65,  # noqa

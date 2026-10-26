@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from parameterized import parameterized
 
-from fastmldsa import MlDsa44
+from fast_mldsa import MlDsa44
 
 
 class TestSignSeedMlDsa44(TestCase):
