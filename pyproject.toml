@@ -1,6 +1,6 @@
 [project]
 name = "fast-mldsa"
-version = "0.1.0a0"
+version = "0.1.0"
 description = "Fast module-lattice digital signatures"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -30,6 +30,8 @@ classifiers = [
 
 [project.urls]
 source = "https://github.com/AntonKueltz/fast-mldsa"
+documentation = "https://fast-mldsa.readthedocs.io"
+pypi = "https://pypi.org/project/fast-mldsa/"
 
 [project.scripts]
 benchmark = "fast_mldsa.benchmark:main"
