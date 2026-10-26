@@ -251,11 +251,6 @@ impl PySigningKey {
 
 #[pymethods]
 impl MlDsa {
-    #[getter]
-    fn parameter_set(&self) -> ParameterSet {
-        self.params
-    }
-
     fn __repr__(&self) -> &'static str {
         match self.params {
             ParameterSet::MlDsa44 => "ML-DSA-44",
