@@ -48,6 +48,8 @@ pub trait Dsa: sealed::Sealed {
         deterministic: bool,
     ) -> Option<Self::SigBytes>;
 
+    fn sign_mu(sk: &Self::SigKey, mu: [u8; 64], deterministic: bool) -> Self::SigBytes;
+
     fn verify(pk: &Self::VerKey, msg: &[u8], ctx: &[u8], sig: &[u8]) -> bool;
 }
 
@@ -91,13 +93,14 @@ impl Dsa for MlDsa44 {
         }
 
         let mut sig = [0u8; 2420];
-        let success =
-            sign_random::<Self, { Self::K }, { Self::L }>(sk, msg, ctx, deterministic, &mut sig);
+        sign_random::<Self, { Self::K }, { Self::L }>(sk, msg, ctx, deterministic, &mut sig);
+        Some(sig)
+    }
 
-        match success {
-            true => Some(sig),
-            false => None,
-        }
+    fn sign_mu(sk: &Self::SigKey, mu: [u8; 64], deterministic: bool) -> Self::SigBytes {
+        let mut sig = [0u8; 2420];
+        sign_mu_random::<Self, { Self::K }, { Self::L }>(sk, mu, deterministic, &mut sig);
+        sig
     }
 
     fn verify(pk: &Self::VerKey, msg: &[u8], ctx: &[u8], sig: &[u8]) -> bool {
@@ -149,13 +152,14 @@ impl Dsa for MlDsa65 {
         }
 
         let mut sig = [0u8; 3309];
-        let success =
-            sign_random::<Self, { Self::K }, { Self::L }>(sk, msg, ctx, deterministic, &mut sig);
+        sign_random::<Self, { Self::K }, { Self::L }>(sk, msg, ctx, deterministic, &mut sig);
+        Some(sig)
+    }
 
-        match success {
-            true => Some(sig),
-            false => None,
-        }
+    fn sign_mu(sk: &Self::SigKey, mu: [u8; 64], deterministic: bool) -> Self::SigBytes {
+        let mut sig = [0u8; 3309];
+        sign_mu_random::<Self, { Self::K }, { Self::L }>(sk, mu, deterministic, &mut sig);
+        sig
     }
 
     fn verify(pk: &Self::VerKey, msg: &[u8], ctx: &[u8], sig: &[u8]) -> bool {
@@ -207,13 +211,14 @@ impl Dsa for MlDsa87 {
         }
 
         let mut sig = [0u8; 4627];
-        let success =
-            sign_random::<Self, { Self::K }, { Self::L }>(sk, msg, ctx, deterministic, &mut sig);
+        sign_random::<Self, { Self::K }, { Self::L }>(sk, msg, ctx, deterministic, &mut sig);
+        Some(sig)
+    }
 
-        match success {
-            true => Some(sig),
-            false => None,
-        }
+    fn sign_mu(sk: &Self::SigKey, mu: [u8; 64], deterministic: bool) -> Self::SigBytes {
+        let mut sig = [0u8; 4627];
+        sign_mu_random::<Self, { Self::K }, { Self::L }>(sk, mu, deterministic, &mut sig);
+        sig
     }
 
     fn verify(pk: &Self::VerKey, msg: &[u8], ctx: &[u8], sig: &[u8]) -> bool {
@@ -276,17 +281,30 @@ fn sign_random<P: Dsa, const K: usize, const L: usize>(
     ctx: &[u8],
     deterministic: bool,
     sig: &mut [u8],
-) -> bool {
+) {
     let mut rnd = Zeroizing::new([0u8; 32]);
 
     if deterministic {
         sign_internal::<P, K, L>(sk, msg, ctx, &rnd, sig);
-        true
-    } else if getrandom::fill(&mut *rnd).is_ok() {
-        sign_internal::<P, K, L>(sk, msg, ctx, &rnd, sig);
-        true
     } else {
-        false
+        getrandom::fill(&mut *rnd).unwrap_or_else(|_| rnd.fill(0));
+        sign_internal::<P, K, L>(sk, msg, ctx, &rnd, sig);
+    }
+}
+
+fn sign_mu_random<P: Dsa, const K: usize, const L: usize>(
+    sk: &SigningKey<K, L>,
+    mu: [u8; 64],
+    deterministic: bool,
+    sig: &mut [u8],
+) {
+    let mut rnd = Zeroizing::new([0u8; 32]);
+
+    if deterministic {
+        sign_mu_internal::<P, K, L>(sk, mu, &rnd, sig);
+    } else {
+        getrandom::fill(&mut *rnd).unwrap_or_else(|_| rnd.fill(0));
+        sign_mu_internal::<P, K, L>(sk, mu, &rnd, sig);
     }
 }
 
@@ -298,6 +316,16 @@ fn sign_internal<P: Dsa, const K: usize, const L: usize>(
     sig: &mut [u8],
 ) {
     let signer = Signer::<K, L>::new(sk, msg, ctx, rnd);
+    signer.sign::<P>(sig);
+}
+
+fn sign_mu_internal<P: Dsa, const K: usize, const L: usize>(
+    sk: &SigningKey<K, L>,
+    mu: [u8; 64],
+    rnd: &[u8; 32],
+    sig: &mut [u8],
+) {
+    let signer = Signer::<K, L>::from_mu(sk, mu, rnd);
     signer.sign::<P>(sig);
 }
 

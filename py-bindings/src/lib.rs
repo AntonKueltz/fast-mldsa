@@ -67,6 +67,16 @@ fn sign_impl<'py, P: Dsa>(
     }
 }
 
+fn sign_mu_impl<'py, P: Dsa>(
+    py: Python<'py>,
+    sk: &P::SigKey,
+    mu: [u8; 64],
+    deterministic: bool,
+) -> Bound<'py, PyBytes> {
+    let sig = P::sign_mu(sk, mu, deterministic);
+    PyBytes::new(py, sig.as_ref())
+}
+
 #[pymethods]
 impl PyVerificationKey {
     fn to_bytes<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyBytes>> {
@@ -241,6 +251,34 @@ impl PySigningKey {
             }
             (ParameterSet::MlDsa87, SkInner::P87(k)) => {
                 sign_impl::<MlDsa87>(py, k, msg, ctx, deterministic)
+            }
+            _ => Err(PyValueError::new_err(
+                "Key does not match this ML_DSA parameter set",
+            )),
+        }
+    }
+
+    #[pyo3(signature = (mu, deterministic = false))]
+    fn sign_mu<'py>(
+        &self,
+        py: Python<'py>,
+        mu: &[u8],
+        deterministic: bool,
+    ) -> PyResult<Bound<'py, PyBytes>> {
+        if mu.len() != 64 {
+            return Err(PyValueError::new_err("Mu must be exactly 64 bytes long"));
+        }
+        let mu: [u8; 64] = mu.try_into().unwrap();
+
+        match (self.params, &self.inner) {
+            (ParameterSet::MlDsa44, SkInner::P44(k)) => {
+                Ok(sign_mu_impl::<MlDsa44>(py, k, mu, deterministic))
+            }
+            (ParameterSet::MlDsa65, SkInner::P65(k)) => {
+                Ok(sign_mu_impl::<MlDsa65>(py, k, mu, deterministic))
+            }
+            (ParameterSet::MlDsa87, SkInner::P87(k)) => {
+                Ok(sign_mu_impl::<MlDsa87>(py, k, mu, deterministic))
             }
             _ => Err(PyValueError::new_err(
                 "Key does not match this ML_DSA parameter set",

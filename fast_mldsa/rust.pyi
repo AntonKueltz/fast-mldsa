@@ -22,6 +22,7 @@ class SigningKey:
     def sign(
         self, msg: bytes, ctx: bytes | None = None, deterministic: bool = False
     ) -> bytes: ...
+    def sign_mu(self, mu: bytes, deterministic: bool = False) -> bytes: ...
 
 class ML_DSA:
     def key_gen(

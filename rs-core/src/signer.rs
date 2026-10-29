@@ -50,6 +50,32 @@ impl<'a, const K: usize, const L: usize> Signer<'a, K, L> {
         }
     }
 
+    pub(crate) fn from_mu(sk: &'a SigningKey<K, L>, mu: [u8; 64], rnd: &[u8; 32]) -> Self {
+        let mut s1_hat = sk.s1().clone();
+        s1_hat.ntt();
+
+        let mut s2_hat = sk.s2().clone();
+        s2_hat.ntt();
+
+        let mut t0_hat = sk.t0().clone();
+        t0_hat.ntt();
+
+        let mut rho_prime = [0u8; 64];
+        h(
+            &mut rho_prime,
+            &[sk.k().as_slice(), rnd.as_slice(), mu.as_slice()],
+        );
+
+        Self {
+            sk,
+            s1_hat,
+            s2_hat,
+            t0_hat,
+            mu,
+            rho_prime,
+        }
+    }
+
     pub(crate) fn sign<P: Dsa>(&self, sig: &mut [u8]) {
         let mut kappa = 0;
 
