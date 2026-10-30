@@ -147,7 +147,7 @@ Reference
       :return: Whether or not the signature is valid.
       :rtype: :type:`bool`
 
-   .. py:method:: VerificationKey.verify(sig: bytes, msg: bytes, ctx: bytes | None = None) -> bool:
+   .. py:method:: VerificationKey.verify_mu(sig: bytes, mu: bytes) -> bool:
 
       Verify the signature for a pre-computed :math:`\mu` using the given verification key.
 
