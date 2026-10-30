@@ -679,3 +679,4 @@ class TestSignSeedMlDsa87(TestCase):
         else:
             sig = sk.sign(msg, ctx, deterministic=True)
             self.assertEqual(sig, sig_expected)
+            self.assertTrue(pk.verify(sig, msg, ctx))

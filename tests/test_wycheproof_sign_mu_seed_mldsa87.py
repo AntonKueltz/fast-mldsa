@@ -655,7 +655,7 @@ class TestSign(TestCase):
         sig_expected: bytes,
         valid: bool,
     ):
-        _, sk = MlDsa87.key_gen(seed)
+        vk, sk = MlDsa87.key_gen(seed)
 
         if not valid:
             with self.assertRaises(ValueError):
@@ -663,3 +663,4 @@ class TestSign(TestCase):
         else:
             sig = sk.sign_mu(mu, deterministic=True)
             self.assertEqual(sig, sig_expected)
+            self.assertTrue(vk.verify_mu(sig, mu))

@@ -143,6 +143,22 @@ impl PyVerificationKey {
             )),
         }
     }
+
+    fn verify_mu(&self, sig: &[u8], mu: &[u8]) -> PyResult<bool> {
+        if mu.len() != 64 {
+            return Err(PyValueError::new_err("Mu must be exactly 64 bytes long"));
+        }
+        let mu: [u8; 64] = mu.try_into().unwrap();
+
+        match (self.params, &self.inner) {
+            (ParameterSet::MlDsa44, VkInner::P44(k)) => Ok(MlDsa44::verify_mu(k, mu, sig)),
+            (ParameterSet::MlDsa65, VkInner::P65(k)) => Ok(MlDsa65::verify_mu(k, mu, sig)),
+            (ParameterSet::MlDsa87, VkInner::P87(k)) => Ok(MlDsa87::verify_mu(k, mu, sig)),
+            _ => Err(PyValueError::new_err(
+                "Key does not match this ML_DSA parameter set",
+            )),
+        }
+    }
 }
 
 #[pymethods]

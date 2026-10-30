@@ -51,6 +51,8 @@ pub trait Dsa: sealed::Sealed {
     fn sign_mu(sk: &Self::SigKey, mu: [u8; 64], deterministic: bool) -> Self::SigBytes;
 
     fn verify(pk: &Self::VerKey, msg: &[u8], ctx: &[u8], sig: &[u8]) -> bool;
+
+    fn verify_mu(pk: &Self::VerKey, mu: [u8; 64], sig: &[u8]) -> bool;
 }
 
 impl sealed::Sealed for MlDsa44 {}
@@ -109,6 +111,10 @@ impl Dsa for MlDsa44 {
         }
 
         verify_internal::<Self, { Self::K }, { Self::L }>(pk, msg, ctx, sig)
+    }
+
+    fn verify_mu(pk: &Self::VerKey, mu: [u8; 64], sig: &[u8]) -> bool {
+        verify_mu_internal::<Self, { Self::K }, { Self::L }>(pk, mu, sig)
     }
 }
 
@@ -169,6 +175,10 @@ impl Dsa for MlDsa65 {
 
         verify_internal::<Self, { Self::K }, { Self::L }>(pk, msg, ctx, sig)
     }
+
+    fn verify_mu(pk: &Self::VerKey, mu: [u8; 64], sig: &[u8]) -> bool {
+        verify_mu_internal::<Self, { Self::K }, { Self::L }>(pk, mu, sig)
+    }
 }
 
 impl sealed::Sealed for MlDsa87 {}
@@ -227,6 +237,10 @@ impl Dsa for MlDsa87 {
         }
 
         verify_internal::<Self, { Self::K }, { Self::L }>(pk, msg, ctx, sig)
+    }
+
+    fn verify_mu(pk: &Self::VerKey, mu: [u8; 64], sig: &[u8]) -> bool {
+        verify_mu_internal::<Self, { Self::K }, { Self::L }>(pk, mu, sig)
     }
 }
 
@@ -335,6 +349,21 @@ fn verify_internal<P: Dsa, const K: usize, const L: usize>(
     ctx: &[u8],
     sig: &[u8],
 ) -> bool {
+    let tr = pk.hash();
+    let mut mu = [0u8; 64];
+    h(
+        &mut mu,
+        &[tr.as_slice(), &[0u8], &[ctx.len() as u8], ctx, msg],
+    );
+
+    verify_mu_internal::<P, K, L>(pk, mu, sig)
+}
+
+fn verify_mu_internal<P: Dsa, const K: usize, const L: usize>(
+    pk: &VerificationKey<K, L>,
+    mu: [u8; 64],
+    sig: &[u8],
+) -> bool {
     let (zlen, hlen) = ((L * (P::GAMMA1 + 1) << 5), P::OMEGA + K);
     if sig.len() != P::C_SZ + zlen + hlen {
         return false;
@@ -354,12 +383,6 @@ fn verify_internal<P: Dsa, const K: usize, const L: usize>(
     }
     z.ntt();
 
-    let tr = pk.hash();
-    let mut mu = [0u8; 64];
-    h(
-        &mut mu,
-        &[tr.as_slice(), &[0u8], &[ctx.len() as u8], ctx, msg],
-    );
     let mut c = Polynomial::sample_ball(chash, P::TAU);
     c.ntt();
 
