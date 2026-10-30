@@ -73,6 +73,31 @@ Reference
       :return: The byte encoded signature.
       :rtype: :type:`bytes`
 
+   .. py:method:: SigningKey.sign_mu(mu: bytes, deterministic: bool = False) -> bytes:
+
+      Generate a signature for a pre-computed :math:`\mu` using the given signing key.
+
+      This is a non-standard use case and usually only applies to use cases where the hardware
+      doing the signing is not suitable for also performing the hashing step(s), e.g. in cases
+      where the hardware does not have an efficient hashing implementation and the message
+      is large enough to impact performance. In those cases it may be desirable to handle the
+      hashing on different hardware to produce :math:`\mu` which can then be passed to the
+      signing hardware.
+
+      Note that this is different from the "HashML-DSA.Sign" interface from the
+      FIPS-204 standard. The standard does not provide a public interface that allows passing
+      of a pre-hashed value, but rather exposes an interface that takes a hash function and
+      message and then computes the pre-hash :math:`M'` that is then signed using "Sign_internal".
+      :math:`\mu` is computed from that :math:`M'` via :math:`\mathrm{SHAKE256}(tr \| M', 64)`. This
+      interface assumes that all those steps have already been taken to compute :math:`\mu`.
+
+      :param mu: A pre-computed :math:`\mu` to sign. Must be exactly 64 bytes long.
+      :type mu: :type:`bytes`
+      :param deterministic: If true, signature is not randomized meaning the same message and context inputs produce the same signature.
+      :type deterministic: :type:`bool`
+      :return: The byte encoded signature.
+      :rtype: :type:`bytes`
+
    .. py:staticmethod:: SigningKey.from_bytes(data: bytes | bytearray | memoryview) -> SigningKey:
 
       Deserialize a signing key from its byte encoding.
@@ -117,6 +142,31 @@ Reference
       :type sig: :type:`bytes`
       :param msg: A message corresponding to the signature.
       :type msg: :type:`bytes`
+      :param ctx: Optional additional context for the message. If ommitted, equivalent to an empty byte sequence.
+      :type ctx: :type:`bytes | None`
+      :return: Whether or not the signature is valid.
+      :rtype: :type:`bool`
+
+   .. py:method:: VerificationKey.verify(sig: bytes, msg: bytes, ctx: bytes | None = None) -> bool:
+
+      Verify the signature for a pre-computed :math:`\mu` using the given verification key.
+
+      This is a non-standard use case and usually only applies to use cases where the hardware
+      doing the verification is not suitable for also performing the hashing step(s), e.g. in cases
+      where the hardware does not have an efficient hashing implementation and the message
+      is large enough to impact performance. In those cases it may be desirable to handle the
+      hashing on different hardware to produce :math:`\mu` which can then be passed to the
+      verification hardware.
+
+      Note that this is different from the "HashML-DSA.Verify" interface from the
+      FIPS-204 standard. The standard does not provide a public interface that allows passing
+      of a pre-hashed value, but rather exposes an interface that takes a hash function and
+      message and then computes the pre-hash :math:`M'` that is then signed using "Verify_internal".
+      :math:`\mu` is computed from that :math:`M'` via :math:`\mathrm{SHAKE256}(tr \| M', 64)`. This
+      interface assumes that all those steps have already been taken to compute :math:`\mu`.
+
+      :param mu: A pre-computed :math:`\mu` to verify. Must be exactly 64 bytes long.
+      :type mu: :type:`bytes`
       :param ctx: Optional additional context for the message. If ommitted, equivalent to an empty byte sequence.
       :type ctx: :type:`bytes | None`
       :return: Whether or not the signature is valid.

@@ -78,6 +78,32 @@ sig = sk.sign(msg)  # signature over the message and context
 valid = vk.verify(sig, msg, ctx)  # check if the signature is valid
 ```
 
+## Signing and Verifiying External `mu`
+
+> [!INFO]
+> This is not a typical use case - `sign` and `verify` are the right interface for the vast majority of use cases.
+
+In some cases, it may be beneficial to pass a pre-hashed value to the sign/verify interface.
+For instance, you may be running on hardware where hashing large messages can be expensive.
+In those cases, a pre-computed `mu` value can be passed to signing and verification.
+
+```python
+from fast_mldsa import MlDsa
+
+vk, sk = MlDsa.key_gen()  # verification and signing key
+
+mu = bytes(64)  # mu must be exactly 64 bytes long
+sig = sk.sign_mu(mu)  # signature over mu
+valid = vk.verify_mu(sig, mu)  # check if the signature is valid
+```
+
+Note that you can also use all of the above variants like deterministic signatures and keys
+from seeds in tandem with external `mu`. Note also that this interface is slightly different
+from the `HashML-DSA.{Sign|Verify}` interface in the FIPS-204 standard. The standard has
+a variable length byte sequence (due to variable hash digest sizes) produced as the pre-hash.
+This must still be passed (along with the verification key hash) to SHAKE256 to produce
+`mu`, which is always 64 bytes.
+
 # Security
 
 > [!WARNING]
@@ -129,6 +155,12 @@ Build the rust code and bindings.
 
 ```bash
 uv run maturin develop -r
+```
+
+Build the docs.
+
+```bash
+uv run make -C docs html
 ```
 
 Run the test suite. The test suite covers the following test vectors:
