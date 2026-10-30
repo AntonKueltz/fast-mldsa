@@ -80,7 +80,7 @@ valid = vk.verify(sig, msg, ctx)  # check if the signature is valid
 
 ## Signing and Verifiying External `mu`
 
-> [!INFO]
+> [!NOTE]
 > This is not a typical use case - `sign` and `verify` are the right interface for the vast majority of use cases.
 
 In some cases, it may be beneficial to pass a pre-hashed value to the sign/verify interface.
